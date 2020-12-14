@@ -1,67 +1,77 @@
 from gym import spaces
 import numpy as np
 import time
-from selenium import webdriver
+from pyts.image import GramianAngularField
+from support.dataset import retrieve_data
+
 
 class Env(object):
-    def __init__(self, investment=20000):
+    def __init__(self, investment=20000, IMG_SIZE=64, patches=16):
+        self.data = retrieve_data()
         self.investment = investment
         self.usd_wallet = None
         self.btc_wallet = None
         self.price = None
         self.reward_dec = 1.0
+        self.time_step = 64
         self.profits = []
-        self.observation_space = np.empty(3,dtype= np.float)
+        self.gasf = GramianAngularField(image_size=IMG_SIZE, method='summation')
+        self.patches = patches
+        self.n_step, self.n_headers = self.data.shape
+        self.dim_len = self.n_headers * self.patches * self.patches
+        self.observation_space = np.zeros((patches, self.dim_len), dtype=np.float32)
         self.action_set = np.arange(9)
         self.action_space = spaces.Discrete(len(self.action_set))
-        self.browser = webdriver.Chrome("D:/Drivers/chromedriver")
-
+        self.viewer = None
         self.reset()
 
     def reset(self):
-        self.profits = []
+        self.time_step = 64
         self.btc_wallet = 0
         self.usd_wallet = self.investment
-        self.reward_dec = self.reward_dec - 0.99e-3 if self.reward_dec > 0 else 0
+        self.profits = []
         self._get_price()
+        self.reward_dec = self.reward_dec - 0.99e-3 if self.reward_dec > 0 else 0
         return self._get_obs()
-
+    
+    # Environment step function
     def step(self, action):
         assert action in self.action_set
         self._get_price()
-        before_price = self.price
         reward = 0.0
-        prev_holding = self.btc_wallet + self.usd_wallet
-        self._action_set(action)
+        # Add up wallets
+        prev_holdings = self.btc_wallet + self.usd_wallet
+        self._trade(action)
+        self._update_btc_wallet()
+        self.time_step += 64
+        # Add up wallet after making a trade
         new_holdings = self.btc_wallet + self.usd_wallet
-        self.profits.append(new_holdings)
-        # Increment timestep by getting the price
-        self._get_price()
-        after_price = self.price
 
-        # Update Wallet
-        self.btc_wallet *= after_price / before_price
-
-        state = self._get_obs()
-
-        done = new_holdings < self.investment
-        info = {"BTC ": self.btc_wallet,
-                "USD":self.usd_wallet}
-
-        # Calculuate Rewards
-        reward_sparse = (new_holdings - prev_holding) * self.reward_dec
-        if new_holdings > prev_holding:
+        reward_sparse = (new_holdings / prev_holdings) * self.reward_dec * 0.5
+        total = new_holdings
+        
+        done = self.time_step == self.n_step - 121 
+        
+        if new_holdings > prev_holdings:
             reward = reward_sparse + 1
         else:
             reward = reward_sparse - 1
-            
-        if done:
-            reward += np.linalg.norm(self.profits) * 0.01
         
-        return state, reward, done, info
-
+        if done:
+            if total > self.investment:
+                reward += 100
+            else:
+                reward -=100
+                
+        info = {"Wallet Total": total}
+        
+        return self._get_obs(), reward, done,info
+        
+        
+        
+        
     # Make a Trade or Hold
-    def _action_set(self,action):
+    def _trade(self,action):
         # Actions correspond with selling or buying bitcoin
         # Hold
         if action == 0:
@@ -102,19 +112,49 @@ class Env(object):
             if self.btc_wallet >= amount:
                 self.btc_wallet -= amount
                 self.usd_wallet += amount
+        
 
-    def _get_obs(self):
-        state = self.observation_space
-        state[0] = self.price 
-        state[1] = self.btc_wallet
-        state[2] = self.usd_wallet
+    # Create a state vector CHLO for the last 64 timesteps IE = 5.3 hours
+    def _create_state(self):
+        old_timestep = int(self.time_step - 64)
+        state = self.data[old_timestep:self.time_step]
         return state
-    
-    
-    def _get_price(self):
-        self.browser.get("https://www.coindesk.com/price/bitcoin")
-        id = self.browser.find_element_by_xpath('//div[@class="price-large"]')
-        price = float(id.text.replace(",", "")[1:])
-        self.price = price
 
+    # Turns state vector into a GAF 'Summation'
+    def _vec_to_image(self):
+        state = self._create_state()
+        # Turn state vector into image (3xHxW)
+        vec_to_img = np.transpose(state)
+        # Transform to GAF Summation
+        state_img = self.gasf.fit_transform(vec_to_img)
+        return state_img
+
+
+    @property
+    def render(self):
+        img = self._vec_to_image()
+        return img[0]
+
+    # Retrieve price at time step.
+    def _get_price(self):
+        self.price = self.data[self.time_step][3]
+        
+    def _update_btc_wallet(self):
+        self.btc_wallet *= self.data[self.time_step + 64][3] / self.price
+
+    # Splits the image into patches (16) & flattens
+    def _get_obs(self):
+        img = self._vec_to_image()
+        state = self.observation_space
+        k = 0
+        for row in range(16, 80, 16):
+            i = row - 16
+            for col in range(16, 80, 16):
+                j = col - 16
+                out = img[:, i:row, j:col]
+                img_flat = out.reshape(-1)
+                state[k] = img_flat
+                k += 1
+        # SHAPE 16x1024 --- 4 * 16 * 16 
+        return state
 
