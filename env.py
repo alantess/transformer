@@ -15,7 +15,7 @@ class Env(object):
         self.reward_dec = 1.0
         self.time_step = 64
         self.profits = []
-        self.gasf = GramianAngularField(image_size=IMG_SIZE, method='summation')
+        self.gasf = GramianAngularField(image_size=IMG_SIZE,method='summation')
         self.patches = patches
         self.n_step, self.n_headers = self.data.shape
         self.dim_len = self.n_headers * self.patches * self.patches
@@ -128,7 +128,7 @@ class Env(object):
         # Turn state vector into image (3xHxW)
         vec_to_img = np.transpose(state)
         # Transform to GAF Summation
-        state_img = self.gasf.fit_transform(vec_to_img)
+        state_img = self.gasf.transform(vec_to_img)
         return state_img
 
 
