@@ -1,8 +1,31 @@
+import os
 import torch as T
 import torch.nn as nn
 from typing import Optional
 from torch.nn import TransformerEncoder, TransformerEncoderLayer
 from torch import Tensor
+import math
+
+'''
+Positional Encoding : takes a 2d tensor --> 3d tensor
+Injects some information on the relevant position of the img in the sequence
+'''
+class PositionalEncoding(nn.Module):
+    def __init__(self, d_model,dropout=0.1, max_len=1024):
+        super(PositionalEncoding, self).__init__()
+        self.dropout = nn.Dropout(p=dropout)
+        pe = T.zeros(max_len, d_model)
+        position = T.arange(0, max_len, dtype=T.float).unsqueeze(1)
+        div_term = T.exp(T.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model)) 
+        pe[:, 0::2] = T.sin(position * div_term)
+        pe[:, 1::2] = T.cos(position * div_term)
+        pe = pe.unsqueeze(0).transpose(0,1)
+        self.register_buffer('pe',pe)
+
+    def forward(self, x):
+        x = x + self.pe[:x.size(0), :]
+        return self.dropout(x)
+
 
 ''' 
 Recreate the transfomer layers done in the following paper
@@ -32,6 +55,7 @@ class TEL(TransformerEncoderLayer):
         out = self.out(out)
         return out
 
+
 '''
 Implementation of transfomer model using GRUs
 '''
@@ -39,48 +63,34 @@ class GTrXL(nn.Module):
     def __init__(self, d_model, nheads, n_layers, n_actions, transformer_layers):
         super(GTrXL, self).__init__()
         # Initialize the embedding layer
-        self.embed = nn.Embedding(d_model * nheads, d_model)
+        self.embed = PositionalEncoding(d_model)
         encoded = TEL(d_model, nheads, n_layers, n_actions)
         self.transfomer = TransformerEncoder(encoded, transformer_layers)
-        
+        self.device = T.device('cuda')
+        self.to(self.device)
+   
 
     def forward(self, x):
         x = self.embed(x)
+        print("AFTER EMBED", x.size())
         x = self.transfomer(x)
         return x
 
 
 
 # Example of implementation        
-#
-# if __name__ == '__main__':
-#     # Retrieve Argmax over a single state
-#     device = T.device('cuda')
-#     transformer = GTrXL(64,4,1,9,1).to(device)
-#     input = T.cuda.LongTensor([[1,6,12,63,14]]) 
-#     out = transformer.forward(input)
-#     out = T.argmax(T.sum(out, dim=1))
-#     print('Action #: ', out)
-#
-#     
-#     # Retrieve Argmax over a batch
-#     import numpy as np
-#
-#     mem = T.zeros((100, 6),dtype=T.long ,device=device)
-#
-#     for i in range(50):
-#         j = i + 3**i
-#         input = T.cuda.LongTensor([[1 ,3,13,52, 31,1]])
-#         mem[i] = input
-#
-#     # sample 
-#     batch = np.random.choice(40, 16,replace=False)
-#     sample = mem[batch]
-#     # Set the hidden layers in the GRU = BATCH_SIZE
-#     transformer_2 = GTrXL(64,4,16,9,1).to(device)
-#     # OUT DIM BS x N_ACTIONS ---> Argmax over the actions
-#     out_2 = transformer_2.forward(sample)
-#     out_2 = T.sum(out_2, dim=1)
-#     out_2 = T.argmax(out_2, dim=1)
-#     print(out_2)
-#
+
+if __name__ == '__main__':
+    device = T.device('cuda')
+    # Retrieve Argmax over a single state
+    transformer = GTrXL(1024,4,16,9,1)
+    input = T.randn((16,1024),device=device) 
+    print("input size of tensor", input.size())
+    out = transformer.forward(input)
+    out = T.sum(out, dim=0)
+    out = T.mean(out,dim=0)
+    out = T.argmax(out, dim=0)
+    print('Action #: ', out)
+
+
+
