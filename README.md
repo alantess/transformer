@@ -1,11 +1,11 @@
-# Crypto-
-Continuous Crypto Space
+# Crypto - Transformer
+Using transformers on Crpytocurrencies
 
 
 ### Todos 
-
-- Create Netowrks 
-    * Incorporate transfomer networks
 - Build Agents
-    * Normalize Sample data
-    * Use DDQN-Transformer 
+		- Implement learn function
+		- Implement action function
+
+- Test Agent 
+

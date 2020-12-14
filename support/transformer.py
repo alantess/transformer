@@ -1,5 +1,6 @@
 import os
 import torch as T
+import torch.optim as optim
 import torch.nn as nn
 from typing import Optional
 from torch.nn import TransformerEncoder, TransformerEncoderLayer
@@ -38,9 +39,8 @@ class TEL(TransformerEncoderLayer):
         # 2 GRUs are needed - 1 for the beginning / 1 at the end
         self.gru_1 = nn.GRU(input_size=d_model, hidden_size=d_model, num_layers=n_layers)
         self.gru_2 = nn.GRU(input_size=d_model, hidden_size=d_model, num_layers=n_layers)
-        # Linear layers to output the actions
-        self.out = nn.Linear(d_model, n_actions)
-
+        self.device = T.device('cuda')
+        self.to(self.device)
     def forward(self, src: Tensor, src_mask: Optional[Tensor] = None,
                 src_key_padding_mask: Optional[Tensor] = None) -> Tensor:
         h = src
@@ -52,7 +52,6 @@ class TEL(TransformerEncoderLayer):
         out = self.activation(self.linear1(out))
         out = self.activation(self.linear2(out))
         out, h = self.gru_2(out,h)
-        out = self.out(out)
         return out
 
 
@@ -60,37 +59,45 @@ class TEL(TransformerEncoderLayer):
 Implementation of transfomer model using GRUs
 '''
 class GTrXL(nn.Module):
-    def __init__(self, d_model, nheads, n_layers, n_actions, transformer_layers):
+    def __init__(self, d_model, nheads, n_layers, n_actions, transformer_layers, lr=0.0003, chkpt_dir="models", network_name='q_'):
         super(GTrXL, self).__init__()
-        # Initialize the embedding layer
+        # Module layers
         self.embed = PositionalEncoding(d_model)
         encoded = TEL(d_model, nheads, n_layers, n_actions)
         self.transfomer = TransformerEncoder(encoded, transformer_layers)
+        self.out = nn.Linear(d_model, n_actions)
+        # Module components devices, optimizer, files, etc
         self.device = T.device('cuda')
         self.to(self.device)
-   
-
+        self.loss = nn.MSELoss()
+        self.optimizer = optim.Adam(self.parameters(), lr = lr) 
+        self.file = os.path.join(chkpt_dir, network_name + '_ddqn_net')
     def forward(self, x):
         x = self.embed(x)
-        print("AFTER EMBED", x.size())
         x = self.transfomer(x)
+        x = self.out(x)
         return x
+
+    def save(self):
+        T.save(self.state_dict() , self.file)
+
+    def load(self):
+        self.load_state_dict(T.load(self.file))
 
 
 
 # Example of implementation        
-
-if __name__ == '__main__':
-    device = T.device('cuda')
-    # Retrieve Argmax over a single state
-    transformer = GTrXL(1024,4,16,9,1)
-    input = T.randn((16,1024),device=device) 
-    print("input size of tensor", input.size())
-    out = transformer.forward(input)
-    out = T.sum(out, dim=0)
-    out = T.mean(out,dim=0)
-    out = T.argmax(out, dim=0)
-    print('Action #: ', out)
-
-
-
+# if __name__ == '__main__':
+#     device = T.device('cuda')
+#     # Retrieve Argmax over a single state
+#     transformer = GTrXL(1024,4,16,9,3)
+#     input = T.randn((16,1024),device=device) 
+#     # Used for batches
+#     # input = T.randn((16,16,1024))
+#     print("input size of tensor", input.size())
+#     out = transformer.forward(input)
+#     out = T.sum(out, dim=0)
+#     out = T.mean(out,dim=0)
+#     out = T.argmax(out, dim=0)
+#     print('Action #: ', out)
+#
