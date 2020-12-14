@@ -23,6 +23,7 @@ class Env(object):
         self.action_set = np.arange(9)
         self.action_space = spaces.Discrete(len(self.action_set))
         self.viewer = None
+        self.total = 0
         self.reset()
 
     def reset(self):
@@ -30,6 +31,7 @@ class Env(object):
         self.btc_wallet = 0
         self.usd_wallet = self.investment
         self.profits = []
+        self.total = 0
         self._get_price()
         self.reward_dec = self.reward_dec - 0.99e-3 if self.reward_dec > 0 else 0
         return self._get_obs()
@@ -48,7 +50,7 @@ class Env(object):
         new_holdings = self.btc_wallet + self.usd_wallet
 
         reward_sparse = (new_holdings / prev_holdings) * self.reward_dec * 0.5
-        total = new_holdings
+        self.total = new_holdings
         
         done = self.time_step == self.n_step - 121 
         
@@ -58,12 +60,12 @@ class Env(object):
             reward = reward_sparse - 1
         
         if done:
-            if total > self.investment:
-                reward += 100
+            if self.total > self.investment:
+                reward += 10
             else:
-                reward -=100
+                reward -=10
                 
-        info = {"Wallet Total": total}
+        info = {"Wallet Total": self.total}
         
         return self._get_obs(), reward, done,info
         
