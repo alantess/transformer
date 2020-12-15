@@ -51,6 +51,43 @@ class Agent(object):
         if self.memory.mem_cntr < self.batch_size:
             return
 
+        # Sample from memory 
+        states, actions, rewards, states_, dones = self.memory.sample_buffer(self.batch_size)
+        # Numpy to Tensor
+        states = T.tensor(states, dtype=T.float).to(self.q_eval.device)
+        actions = T.tensor(actions, dtype=T.int64).to(self.q_eval.device)
+        rewards = T.tensor(rewards, dtype=T.float).to(self.q_eval.device)
+        states_ = T.tensor(states_, dtype=T.float).to(self.q_eval.device)
+        done = T.tensor(dones, dtype=T.bool).to(self.q_eval.device)
+
+        self.q_train.optimizer.zero_grad()
+        self.update_target_network()
+
+        indices = np.arange(self.batch_size)
+        
+        # Estimate Q 
+        q_pred = (self.q_train.forward(states) * actions).sum(dim=0).mean(dim=1)
+        q_next = self.q_eval.forward(states_).mean(dim=0)
+        q_train = self.q_train.forward(states_).mean(dim=0)
+
+        q_next[done] = 0.0
+        max_action = T.argmax(q_train,dim=1)
+
+        y = rewards + self.gamma * q_next[indices, max_action]
+        print(y)
+
+        loss = self.q_train.loss(y,q_pred).to(self.q_eval.device)
+        loss.backward()
+
+        self.q_train.optimizer.step()
+
+        self.update_cntr += 1
+        self.epsilon = self.epsilon - self.eps_dec if self.epsilon > self.eps_min else self.eps_min
+
+
+
+
+
 
 
 
