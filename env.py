@@ -5,20 +5,23 @@ from pyts.image import GramianAngularField
 from support.dataset import retrieve_data
 
 
+
 class Env(object):
-    def __init__(self, investment=20000, IMG_SIZE=64, patches=16):
+    def __init__(self, investment=20000, IMG_SIZE=32, patches=16):
         self.data = retrieve_data()
         self.investment = investment
         self.usd_wallet = None
         self.btc_wallet = None
         self.price = None
         self.reward_dec = 1.0
-        self.time_step = 64
+        self.img_size=IMG_SIZE
+        self.time_step = IMG_SIZE
         self.profits = []
         self.gasf = GramianAngularField(image_size=IMG_SIZE,method='summation')
         self.patches = patches
         self.n_step, self.n_headers = self.data.shape
-        self.dim_len = self.n_headers * self.patches * self.patches
+        dim_size = int(self.patches / 2)
+        self.dim_len = self.n_headers * dim_size * dim_size
         self.observation_space = np.zeros((patches, self.dim_len), dtype=np.float32)
         self.action_set = np.arange(9)
         self.action_space = spaces.Discrete(len(self.action_set))
@@ -27,7 +30,7 @@ class Env(object):
         self.reset()
 
     def reset(self):
-        self.time_step = 64
+        self.time_step = self.img_size
         self.btc_wallet = 0
         self.usd_wallet = self.investment
         self.profits = []
@@ -45,7 +48,7 @@ class Env(object):
         prev_holdings = self.btc_wallet + self.usd_wallet
         self._trade(action)
         self._update_btc_wallet()
-        self.time_step += 64
+        self.time_step += self.img_size
         # Add up wallet after making a trade
         new_holdings = self.btc_wallet + self.usd_wallet
 
@@ -118,7 +121,7 @@ class Env(object):
 
     # Create a state vector CHLO for the last 64 timesteps IE = 5.3 hours
     def _create_state(self):
-        old_timestep = int(self.time_step - 64)
+        old_timestep = int(self.time_step - self.img_size)
         state = self.data[old_timestep:self.time_step]
         return state
 
@@ -142,21 +145,20 @@ class Env(object):
         self.price = self.data[self.time_step][3]
         
     def _update_btc_wallet(self):
-        self.btc_wallet *= self.data[self.time_step + 64][3] / self.price
+        self.btc_wallet *= self.data[self.time_step + self.img_size][3] / self.price
 
     # Splits the image into patches (16) & flattens
     def _get_obs(self):
         img = self._vec_to_image()
         state = self.observation_space
-        k = 0
-        for row in range(16, 80, 16):
-            i = row - 16
-            for col in range(16, 80, 16):
-                j = col - 16
-                out = img[:, i:row, j:col]
-                img_flat = out.reshape(-1)
-                state[k] = img_flat
-                k += 1
-        # SHAPE 16x1024 --- 4 * 16 * 16 
+        row,col = 8,8
+        for i in range(16):
+            out = img[:, row-8:row , col-8:col]
+            img_flat = out.reshape(-1)
+            state[i] = img_flat
+            if i + 1 % 4 == 0:
+                row += 8
+                col = 8
+
         return state
 

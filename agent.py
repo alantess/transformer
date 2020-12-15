@@ -5,7 +5,7 @@ from support.memory import ReplayBuffer
 
 
 class Agent(object):
-    def __init__(self, input_dims, n_actions, env, embed_len=1024,
+    def __init__(self, input_dims, n_actions, env, embed_len=256,
                  epsilon=1.0, batch_size=16, eps_dec=4.5e-7, replace=1000, nheads=4,
                  gamma=0.99, capacity=100000, n_patches=16, transformer_layers=1):
         self.input_dims = input_dims
@@ -74,7 +74,6 @@ class Agent(object):
         max_action = T.argmax(q_train,dim=1)
 
         y = rewards + self.gamma * q_next[indices, max_action]
-        print(y)
 
         loss = self.q_train.loss(y,q_pred).to(self.q_eval.device)
         loss.backward()
@@ -83,12 +82,6 @@ class Agent(object):
 
         self.update_cntr += 1
         self.epsilon = self.epsilon - self.eps_dec if self.epsilon > self.eps_min else self.eps_min
-
-
-
-
-
-
 
 
     # Save weights
