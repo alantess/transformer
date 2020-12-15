@@ -7,10 +7,11 @@ import time
 
 
 if __name__ == '__main__':
-    # Create environmetn
+    np.random.seed(99)
+    # Create environment
     env = Env()
     # Create Agent
-    agent = Agent(16,9,env,capacity=1000)
+    agent = Agent(16,9,env,capacity=500000)
 
     # Variables needed for reward tracking
     scores, running_avg = [], []
@@ -28,7 +29,7 @@ if __name__ == '__main__':
             obs_ , reward, done, info = env.step(action)
             score += reward
             agent.store_transition(obs, action, reward, obs_, done)
-            if n_steps % 4 ==0:
+            if n_steps % 4 == 0:
                 agent.learn()
             obs = obs_
             n_steps +=1
@@ -40,7 +41,7 @@ if __name__ == '__main__':
             best_score = avg_score
             agent.save()
 
-        print(f"Episode {i}: Score: score | Best Score: {best_score} | AVG: {avg_score} ")
+        print(f"Episode {i}: Score: {score} | Best Score: {best_score/1000} | AVG: {avg_score/1000} ")
 
 
 
