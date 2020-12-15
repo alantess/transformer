@@ -26,7 +26,23 @@ class Agent(object):
         self.q_eval = GTrXL(self.embed_len,input_dims,n_patches,n_actions, transformer_layers,network_name="q_eval" )
         # Training Network
         self.q_train = GTrXL(self.embed_len,input_dims,n_patches,n_actions, transformer_layers,network_name="q_train" )
-    
+
+
+    def pick_action(self, obs):
+        if np.random.random() > self.epsilon:
+            state = T.tensor(obs,dtype=T.float).to(self.q_eval.device)
+            output = self.q_eval.forward(state).sum(dim=0).mean(dim=0).argmax(dim=0)
+            action = output.item()
+        else:
+            action = self.env.action_space.sample()
+
+        return action
+
+
+    def update_target_network(self):
+        if self.update_cntr % self.replace == 0:
+            self.q_eval.load_state_dict(self.q_train.state_dict())
+
 
     # Store Experience
     def store_transition(self, state, action, reward, state_, done):

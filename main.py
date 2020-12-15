@@ -25,15 +25,3 @@ if __name__ == '__main__':
             score += reward
 
 
-    state, action, reward, state_, done = mem.sample_buffer(16)
-    device = T.device("cuda")
-    state = T.tensor(state, device=device)
-    print(state.size())
-    model = GTrXL(1024,4,16,9,3)
-    out = model(state)
-    out = T.sum(out,dim=0)
-    out = T.mean(out,dim=0)
-    out = T.argmax(out,dim=0)
-    print(out)
-
-
