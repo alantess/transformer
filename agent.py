@@ -5,9 +5,9 @@ from support.memory import ReplayBuffer
 
 
 class Agent(object):
-    def __init__(self, input_dims, n_actions, batch_size,embed_len,env, 
-                epsilon=1.0, batch_size=16, eps_dec=4.5e-7, replace=1000,nheads=4
-                gamma=0.99, capacity=1000000, n_patches = 16, transformer_layers=1):
+    def __init__(self, input_dims, n_actions, env, embed_len=1024,
+                 epsilon=1.0, batch_size=16, eps_dec=4.5e-7, replace=1000, nheads=4,
+                 gamma=0.99, capacity=100000, n_patches=16, transformer_layers=1):
         self.input_dims = input_dims
         self.gamma = gamma
         self.embed_len = embed_len
@@ -20,17 +20,17 @@ class Agent(object):
         self.update_cntr = 0
         self.env = env
         # Replay Buffer
-        self.memory = ReplayBuffer(capacity=100000, input_dims=self.input_dims,n_actions=self.n_actions, embed_len=self.embed_len )
+        self.memory = ReplayBuffer(capacity=capacity, input_dims=self.input_dims, n_actions=self.n_actions,
+                                   embed_len=self.embed_len)
 
         # Evaluation Network
-        self.q_eval = GTrXL(self.embed_len,input_dims,n_patches,n_actions, transformer_layers,network_name="q_eval" )
+        self.q_eval = GTrXL(self.embed_len, nheads, n_patches, n_actions, transformer_layers, network_name="q_eval")
         # Training Network
-        self.q_train = GTrXL(self.embed_len,input_dims,n_patches,n_actions, transformer_layers,network_name="q_train" )
-
+        self.q_train = GTrXL(self.embed_len, nheads, n_patches, n_actions, transformer_layers, network_name="q_train")
 
     def pick_action(self, obs):
         if np.random.random() > self.epsilon:
-            state = T.tensor(obs,dtype=T.float).to(self.q_eval.device)
+            state = T.tensor(obs, dtype=T.float).to(self.q_eval.device)
             output = self.q_eval.forward(state).sum(dim=0).mean(dim=0).argmax(dim=0)
             action = output.item()
         else:
@@ -38,29 +38,30 @@ class Agent(object):
 
         return action
 
-
     def update_target_network(self):
         if self.update_cntr % self.replace == 0:
             self.q_eval.load_state_dict(self.q_train.state_dict())
 
-
     # Store Experience
     def store_transition(self, state, action, reward, state_, done):
         self.memory.store_transition(state, action, reward, state_, done)
-    
+
+    # Agent's Learn Function
+    def learn(self):
+        if self.memory.mem_cntr < self.batch_size:
+            return
+
+
+
+
     # Save weights
     def save(self):
         print("Saving...")
         self.q_eval.save()
         self.q_train.save()
 
-
     # Load Weights
-    def load():
+    def load(self):
         print("loading...")
         self.q_eval.load()
         self.q_train.load()
-        
-
-
-

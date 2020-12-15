@@ -34,7 +34,7 @@ https://arxiv.org/pdf/1910.06764.pdf
 '''
 
 class TEL(TransformerEncoderLayer):
-    def __init__(self, d_model, nhead, n_layers,n_actions):
+    def __init__(self, d_model, nhead, n_layers):
         super().__init__(d_model, nhead)
         # 2 GRUs are needed - 1 for the beginning / 1 at the end
         self.gru_1 = nn.GRU(input_size=d_model, hidden_size=d_model, num_layers=n_layers)
@@ -63,7 +63,7 @@ class GTrXL(nn.Module):
         super(GTrXL, self).__init__()
         # Module layers
         self.embed = PositionalEncoding(d_model)
-        encoded = TEL(d_model, nheads, n_layers, n_actions)
+        encoded = TEL(d_model, nheads, n_layers)
         self.transfomer = TransformerEncoder(encoded, transformer_layers)
         self.out = nn.Linear(d_model, n_actions)
         # Module components devices, optimizer, files, etc
