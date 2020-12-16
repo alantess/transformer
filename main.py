@@ -1,3 +1,4 @@
+import torch
 from env import Env
 import numpy as np
 from agent import Agent
@@ -11,7 +12,8 @@ if __name__ == '__main__':
     # Create environment
     env = Env()
     # Create Agent
-    agent = Agent(16,9,env,capacity=1000000,nheads=2, transformer_layers=1)
+    agent = Agent(16,9,env,capacity=100,nheads=2, transformer_layers=1)
+    print("Model Parameters: ",agent.count_params())
 
     # Variables needed for reward tracking
     scores, running_avg = [], []
@@ -21,6 +23,7 @@ if __name__ == '__main__':
     n_steps = 0
     print("Starting...")
     for i in range(n_episodes):
+        torch.cuda.empty_cache()
         obs = env.reset()
         done = False
         score = 0

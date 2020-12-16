@@ -60,7 +60,10 @@ class Agent(object):
         states_ = T.tensor(states_, dtype=T.float).to(self.q_eval.device)
         done = T.tensor(dones, dtype=T.bool).to(self.q_eval.device)
 
-        self.q_train.optimizer.zero_grad()
+        # self.q_train.optimizer.zero_grad()
+        for param in self.q_train.parameters():
+            param.grad = None
+
         self.update_target_network()
 
         indices = np.arange(self.batch_size)
@@ -95,3 +98,7 @@ class Agent(object):
         print("loading...")
         self.q_eval.load()
         self.q_train.load()
+
+    def count_params(self):
+        model = self.q_train
+        return sum(p.numel() for p in model.parameters() if p.requires_grad)
