@@ -6,8 +6,7 @@
 - *Using a transformer model on images* ➱[ Click Here](https://arxiv.org/abs/2010.11929)
 - *Alterations to the transformer model* ➱ [Click Here](https://arxiv.org/abs/1910.06764)
 
-[Model Architecture](https://lilianweng.github.io/lil-log/assets/images/gated-transformer-XL.png)
-<a href="http://google.com.au/" rel="some text">![Foo](http://www.google.com.au/images/nav_logo7.png)</a>
+<a href="https://lilianweng.github.io/lil-log/assets/images/gated-transformer-XL.png" rel="Transformer">![Transformer](https://lilianweng.github.io/lil-log/assets/images/gated-transformer-XL.png)</a>
 
 Directory Structure
 ------
