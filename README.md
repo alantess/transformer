@@ -21,8 +21,9 @@ Directory Structure
 
 ------
 # TODO 
-- Utilize DDQN - method witht he transformer model
-- Use a on-policy witht the transformer model
-- Tune Hyperparameters
+- Utilize DDQN & SAC - method with he transformer model
+- Use a on-policy with the transformer model
+- Tune hyperparameters
+- 
 
 
