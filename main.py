@@ -12,14 +12,14 @@ if __name__ == '__main__':
     # Create environment
     env = Env()
     # Create Agent
-    agent = Agent(16,9,env,capacity=100,nheads=2, transformer_layers=1)
+    agent = Agent(16,9,env,capacity=1000000,nheads=4, transformer_layers=2)
     print("Model Parameters: ",agent.count_params())
 
     # Variables needed for reward tracking
     scores, running_avg = [], []
-    best_score =  -np.inf
+    best_score = -np.inf
 
-    n_episodes = 1000 
+    n_episodes = 1000
     n_steps = 0
     print("Starting...")
     for i in range(n_episodes):

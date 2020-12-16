@@ -3,4 +3,4 @@ Using transformers on Crpytocurrencies
 
 
 ### Todos 
-*	Train the agent
+* Test differentm model architecture
