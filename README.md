@@ -7,6 +7,7 @@
 - *Alterations to the transformer model* ➱ [Click Here](https://arxiv.org/abs/1910.06764)
 
 [Model Architecture](https://lilianweng.github.io/lil-log/assets/images/gated-transformer-XL.png)
+<a href="http://google.com.au/" rel="some text">![Foo](http://www.google.com.au/images/nav_logo7.png)</a>
 
 Directory Structure
 ------
