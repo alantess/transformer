@@ -7,17 +7,17 @@ import time
 
 
 if __name__ == '__main__':
-    np.random.seed(99)
+    np.random.seed(55)
     # Create environment
     env = Env()
     # Create Agent
-    agent = Agent(16,9,env,capacity=500000)
+    agent = Agent(16,9,env,capacity=1000000,nheads=2, transformer_layers=1)
 
     # Variables needed for reward tracking
     scores, running_avg = [], []
     best_score =  -np.inf
 
-    n_episodes = 19 
+    n_episodes = 1000 
     n_steps = 0
     print("Starting...")
     for i in range(n_episodes):
