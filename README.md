@@ -6,6 +6,8 @@
 - *Using a transformer model on images* ➱[ Click Here](https://arxiv.org/abs/2010.11929)
 - *Alterations to the transformer model* ➱ [Click Here](https://arxiv.org/abs/1910.06764)
 
+[Model Architecture](https://lilianweng.github.io/lil-log/assets/images/gated-transformer-XL.png)
+
 Directory Structure
 ------
     .
@@ -21,9 +23,15 @@ Directory Structure
 
 ------
 # TODO 
-- Utilize DDQN & SAC - method with he transformer model
-- Use a on-policy with the transformer model
-- Tune hyperparameters
-- 
+- [x] Apply DDQN algorithm. 
+- [ ] Improve environement. 
+- [ ] Tune hyperparameters. 
+- [ ] Apply SAC algorithm.
+
+
+
+
+*[Dataset Used USDTBTC](https://cryptodatum.io/csv_downloads)* 
+ 
 
 
