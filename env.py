@@ -55,7 +55,12 @@ class Env(object):
         reward_sparse = (new_holdings / prev_holdings) * self.reward_dec * 0.5
         self.total = new_holdings
         
-        done = self.time_step == self.n_step - 121 
+        # Lose more than 10% of investment--> then quit, Otherwise continue
+        if new_holdings < self.investment - (self.investment*.10):
+            done = True
+        else:
+            done = self.time_step == self.n_step - 121 
+        
         
         if new_holdings > prev_holdings:
             reward = reward_sparse + 1

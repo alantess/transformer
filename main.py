@@ -12,7 +12,7 @@ if __name__ == '__main__':
     # Create environment
     env = Env()
     # Create Agent
-    agent = Agent(16,9,env,capacity=1000000,nheads=4, transformer_layers=2)
+    agent = Agent(16,9,env,capacity=1000000,nheads=4, transformer_layers=3)
     print("Model Parameters: ",agent.count_params())
 
     # Variables needed for reward tracking
