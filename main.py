@@ -3,27 +3,28 @@ from env import Env
 import numpy as np
 from agent import Agent
 import time
+import tqdm
 
 
 
 
 if __name__ == '__main__':
-    np.random.seed(55)
+    np.random.seed(82)
+    torch.cuda.empty_cache()
     # Create environment
     env = Env()
     # Create Agent
-    agent = Agent(16,9,env,capacity=1000000,nheads=4, transformer_layers=3)
+    agent = Agent(16,9,env,capacity=1000000,nheads=4, transformer_layers=6, eps_dec=4.5e-5)
     print("Model Parameters: ",agent.count_params())
 
     # Variables needed for reward tracking
     scores, running_avg = [], []
     best_score = -np.inf
 
-    n_episodes = 1000
+    n_episodes = 2000
     n_steps = 0
     print("Starting...")
     for i in range(n_episodes):
-        torch.cuda.empty_cache()
         obs = env.reset()
         done = False
         score = 0
@@ -44,7 +45,7 @@ if __name__ == '__main__':
             best_score = avg_score
             agent.save()
 
-        print(f"Episode {i}: Score: {score} | Best Score: {best_score/1000} | AVG: {avg_score/1000} ")
+        print(f"Episode {i}: Score: {score} | Best Score: {best_score/10:.2f} | AVG: {avg_score/10:.2f} | Epsilon: {agent.epsilon:.4f} | Reward: {env.reward_dec:.3f} ")
 
 
 

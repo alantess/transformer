@@ -46,6 +46,10 @@ class Agent(object):
     def store_transition(self, state, action, reward, state_, done):
         self.memory.store_transition(state, action, reward, state_, done)
 
+
+    def decrement_epsilon(self):
+        self.epsilon = self.epsilon - self.eps_dec  if self.epsilon > self.eps_min else self.eps_min
+
     # Agent's Learn Function
     def learn(self):
         if self.memory.mem_cntr < self.batch_size:
@@ -84,7 +88,7 @@ class Agent(object):
         self.q_train.optimizer.step()
 
         self.update_cntr += 1
-        self.epsilon = self.epsilon - self.eps_dec if self.epsilon > self.eps_min else self.eps_min
+        self.decrement_epsilon()
 
 
     # Save weights
