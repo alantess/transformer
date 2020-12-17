@@ -56,7 +56,7 @@ class Env(object):
         self.total = new_holdings
         
         # Lose than 10% of investment--> then quit, Otherwise continue
-        if new_holdings < self.investment - (self.investment * .1):
+        if new_holdings < self.investment - (self.investment * .10):
             done = True
         else:
             done = self.time_step == self.n_step - 121 

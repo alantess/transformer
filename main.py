@@ -9,7 +9,7 @@ import tqdm
 
 
 if __name__ == '__main__':
-    np.random.seed(82)
+    np.random.seed(66)
     torch.cuda.empty_cache()
     # Create environment
     env = Env()
