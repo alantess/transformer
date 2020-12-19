@@ -6,7 +6,7 @@ from support.memory import ReplayBuffer
 
 class Agent(object):
     def __init__(self, input_dims, n_actions, env, embed_len=256,
-                 epsilon=1.0, batch_size=16, eps_dec=4.5e-7, replace=1000, nheads=4,
+                 epsilon=1.0, batch_size=32, eps_dec=4.5e-7, replace=1000, nheads=4,
                  gamma=0.99, capacity=100000, n_patches=16, transformer_layers=1,lr=0.0003, gate_layers=1):
         self.input_dims = input_dims
         self.gamma = gamma
@@ -73,9 +73,11 @@ class Agent(object):
         indices = np.arange(self.batch_size)
         
         # Estimate Q 
-        q_pred = (self.q_train.forward(states) * actions).sum(dim=0).mean(dim=1)
-        q_next = self.q_eval.forward(states_).mean(dim=0)
-        q_train = self.q_train.forward(states_).mean(dim=0)
+        q_pred = self.q_train.forward(states).mean(dim=1) 
+        q_pred *= actions
+        q_pred = q_pred.mean(dim=1)
+        q_next = self.q_eval.forward(states_).mean(dim=1)
+        q_train = self.q_train.forward(states_).mean(dim=1)
 
         q_next[done] = 0.0
         max_action = T.argmax(q_train,dim=1)

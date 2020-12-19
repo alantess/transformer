@@ -9,13 +9,13 @@ import matplotlib.pyplot as plt
 
 
 if __name__ == '__main__':
-    np.random.seed(38)
+    np.random.seed(39)
     torch.cuda.empty_cache()
     # Create environment
     env = Env()
     # Create Agent
     # Epsilon is set to 1e-6 * 4 steps, takes 1M steps to reach 0.01
-    agent = Agent(16,env.action_set.shape[0],env,capacity=1000000,nheads=4, transformer_layers=6, eps_dec=4.25e-6, replace=10000, lr=0.00035)
+    agent = Agent(16,env.action_set.shape[0],env,capacity=1000000,nheads=4, batch_size=128,transformer_layers=6, eps_dec=4.25e-6, replace=10000, lr=0.00035)
     print("Model Parameters: ",agent.count_params())
     # agent.load()
 
