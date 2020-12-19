@@ -34,24 +34,26 @@ https://arxiv.org/pdf/1910.06764.pdf
 '''
 
 class TEL(TransformerEncoderLayer):
-    def __init__(self, d_model, nhead, n_layers):
+    def __init__(self, d_model, nhead, n_layers=1):
         super().__init__(d_model, nhead)
         # 2 GRUs are needed - 1 for the beginning / 1 at the end
-        self.gru_1 = nn.GRU(input_size=d_model, hidden_size=d_model, num_layers=n_layers)
-        self.gru_2 = nn.GRU(input_size=d_model, hidden_size=d_model, num_layers=n_layers)
+        self.gru_1 = nn.GRU(d_model, d_model, num_layers=n_layers, batch_first=True)
+        self.gru_2 = nn.GRU(input_size=d_model, hidden_size=d_model, num_layers=n_layers, batch_first=True)
         self.device = T.device('cuda')
         self.to(self.device)
+
     def forward(self, src: Tensor, src_mask: Optional[Tensor] = None,
                 src_key_padding_mask: Optional[Tensor] = None) -> Tensor:
-        h = src
+        h = (src).sum(dim=1).unsqueeze(dim=0)
         src = self.norm1(src)
         out = self.self_attn(src, src, src, attn_mask=src_mask,
                                key_padding_mask=src_key_padding_mask)[0]
-        out, h = self.gru_1(out,h)
+
+        out,h = self.gru_1(out,h)
         out = self.norm2(out)
         out = self.activation(self.linear1(out))
         out = self.activation(self.linear2(out))
-        out, h = self.gru_2(out,h)
+        out,h = self.gru_2(out,h)
         return out
 
 
@@ -59,7 +61,7 @@ class TEL(TransformerEncoderLayer):
 Implementation of transfomer model using GRUs
 '''
 class GTrXL(nn.Module):
-    def __init__(self, d_model, nheads, n_layers, n_actions, transformer_layers, lr=0.0003, chkpt_dir="models", network_name='q_'):
+    def __init__(self, d_model, nheads, n_layers, n_actions, transformer_layers, lr=0.00025, chkpt_dir="models", network_name='q_'):
         super(GTrXL, self).__init__()
         # Module layers
         self.embed = PositionalEncoding(d_model)
@@ -90,8 +92,8 @@ class GTrXL(nn.Module):
 # if __name__ == '__main__':
 #     device = T.device('cuda')
 #     # Retrieve Argmax over a single state
-#     transformer = GTrXL(1024,4,16,9,3)
-#     input = T.randn((16,1024),device=device) 
+#     transformer = GTrXL(1024,4,1,9,3)
+#     input = T.randn((32,16,1024),device=device) 
 #     # Used for batches
 #     # input = T.randn((16,16,1024))
 #     print("input size of tensor", input.size())
