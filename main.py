@@ -4,24 +4,26 @@ import numpy as np
 from agent import Agent
 import time
 import tqdm
-
+import matplotlib.pyplot as plt
 
 
 
 if __name__ == '__main__':
-    np.random.seed(66)
+    np.random.seed(38)
     torch.cuda.empty_cache()
     # Create environment
     env = Env()
     # Create Agent
-    agent = Agent(16,9,env,capacity=1000000,nheads=4, transformer_layers=6, eps_dec=4.5e-5)
+    # Epsilon is set to 1e-6 * 4 steps, takes 1M steps to reach 0.01
+    agent = Agent(16,env.action_set.shape[0],env,capacity=1000000,nheads=6, transformer_layers=6, eps_dec=4.25e-6, replace=10000)
     print("Model Parameters: ",agent.count_params())
+    # agent.load()
 
     # Variables needed for reward tracking
     scores, running_avg = [], []
     best_score = -np.inf
 
-    n_episodes = 2000
+    n_episodes = 10000
     n_steps = 0
     print("Starting...")
     for i in range(n_episodes):
@@ -45,9 +47,12 @@ if __name__ == '__main__':
             best_score = avg_score
             agent.save()
 
-        print(f"Episode {i}: Score: {score} | Best Score: {best_score/10:.2f} | AVG: {avg_score/10:.2f} | Epsilon: {agent.epsilon:.4f} | Reward: {env.reward_dec:.3f} ")
+        print(f"Episode {i}: Score: {score} | Best Score: {best_score/10:.2f} | AVG: {avg_score/10:.2f} | {info} |Epsilon: {agent.epsilon:.6f} | Reward: {env.reward_dec:.3f} ")
+    plt.plot(running_avg)
+    plt.savefig('avg_scores.png')
 
 
 
-    
-            
+
+
+

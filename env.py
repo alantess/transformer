@@ -7,7 +7,7 @@ from support.dataset import retrieve_data
 
 
 class Env(object):
-    def __init__(self, investment=20000, IMG_SIZE=32, patches=16):
+    def __init__(self, investment=25000, IMG_SIZE=32, patches=16):
         self.data = retrieve_data()
         self.investment = investment
         self.usd_wallet = None
@@ -23,7 +23,7 @@ class Env(object):
         dim_size = int(self.patches / 2)
         self.dim_len = self.n_headers * dim_size * dim_size
         self.observation_space = np.zeros((patches, self.dim_len), dtype=np.float32)
-        self.action_set = np.arange(9)
+        self.action_set = np.arange(17)
         self.action_space = spaces.Discrete(len(self.action_set))
         self.viewer = None
         self.total = 0
@@ -36,7 +36,6 @@ class Env(object):
         self.profits = []
         self.total = 0
         self._get_price()
-        self.reward_dec = self.reward_dec - 0.99e-3 if self.reward_dec > 0 else 0
         return self._get_obs()
     
     # Environment step function
@@ -55,8 +54,8 @@ class Env(object):
         reward_sparse = (new_holdings / prev_holdings) * self.reward_dec * 0.5
         self.total = new_holdings
         
-        # Lose than 10% of investment--> then quit, Otherwise continue
-        if new_holdings < self.investment - (self.investment * .10):
+        # Lose than 5% of investment--> then quit, Otherwise continue
+        if new_holdings < self.investment - (self.investment * .05):
             done = True
         else:
             done = self.time_step == self.n_step - 121 
@@ -68,13 +67,14 @@ class Env(object):
             reward = reward_sparse - 1
         
         if done:
-            if self.total > self.investment:
-                reward += 10
+            if self.total > self.investment * 2:
+                reward += 10.0
             else:
-                reward -=10
+                reward += 0.0
                 
         info = {"Wallet Total": self.total}
         
+        self.reward_dec = self.reward_dec - 2e-6 if self.reward_dec > 0 else 0
         return self._get_obs(), reward, done,info
         
         
@@ -111,6 +111,32 @@ class Env(object):
         if action == 8:
             self._buy_or_sell(purchase=False, percentage=0.25)
 
+        
+        # Purchase 500%
+        if action == 9:
+            self._buy_or_sell(purchase=True, percentage=5.0)
+        # Sell 500%
+        if action == 10:
+            self._buy_or_sell(purchase=False,percentage=5.0)
+        # Purchase 400%
+        if action == 11:
+            self._buy_or_sell(purchase=True,percentage=4.00)
+        # Sell 400%
+        if action == 12:
+            self._buy_or_sell(purchase=False, percentage=4.00)
+        # Purchase 300%
+        if action == 13:
+            self._buy_or_sell(purchase=True,percentage=3.0)
+        # Sell 300%
+        if action == 14:
+            self._buy_or_sell(purchase=False,percentage=3.0)
+        # Purchase 200%
+        if action == 15:
+            self._buy_or_sell(purchase=True, percentage=2.00)
+        # Sell 200%
+        if action == 16:
+            self._buy_or_sell(purchase=False, percentage=2.00)
+            
     def _buy_or_sell(self, purchase, percentage):
         #  Purchase or Sell Amount
         amount = self.price * percentage
