@@ -7,7 +7,7 @@ from support.memory import ReplayBuffer
 class Agent(object):
     def __init__(self, input_dims, n_actions, env, embed_len=256,
                  epsilon=1.0, batch_size=16, eps_dec=4.5e-7, replace=1000, nheads=4,
-                 gamma=0.99, capacity=100000, n_patches=16, transformer_layers=1):
+                 gamma=0.99, capacity=100000, n_patches=16, transformer_layers=1,lr=0.0003, gate_layers=1):
         self.input_dims = input_dims
         self.gamma = gamma
         self.embed_len = embed_len
@@ -24,9 +24,9 @@ class Agent(object):
                                    embed_len=self.embed_len)
 
         # Evaluation Network
-        self.q_eval = GTrXL(self.embed_len, nheads, n_patches, n_actions, transformer_layers, network_name="q_eval")
+        self.q_eval = GTrXL(self.embed_len, nheads, gate_layers, n_actions, transformer_layers, network_name="q_eval", lr=lr)
         # Training Network
-        self.q_train = GTrXL(self.embed_len, nheads, n_patches, n_actions, transformer_layers, network_name="q_train")
+        self.q_train = GTrXL(self.embed_len, nheads, gate_layers, n_actions, transformer_layers, network_name="q_train",lr=lr)
 
     def pick_action(self, obs):
         if np.random.random() > self.epsilon:

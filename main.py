@@ -15,7 +15,7 @@ if __name__ == '__main__':
     env = Env()
     # Create Agent
     # Epsilon is set to 1e-6 * 4 steps, takes 1M steps to reach 0.01
-    agent = Agent(16,env.action_set.shape[0],env,capacity=1000000,nheads=6, transformer_layers=6, eps_dec=4.25e-6, replace=10000)
+    agent = Agent(16,env.action_set.shape[0],env,capacity=1000000,nheads=4, transformer_layers=6, eps_dec=4.25e-6, replace=10000, lr=0.00035)
     print("Model Parameters: ",agent.count_params())
     # agent.load()
 
@@ -23,7 +23,7 @@ if __name__ == '__main__':
     scores, running_avg = [], []
     best_score = -np.inf
 
-    n_episodes = 10000
+    n_episodes = 50000 
     n_steps = 0
     print("Starting...")
     for i in range(n_episodes):
@@ -48,8 +48,8 @@ if __name__ == '__main__':
             agent.save()
 
         print(f"Episode {i}: Score: {score} | Best Score: {best_score/10:.2f} | AVG: {avg_score/10:.2f} | {info} |Epsilon: {agent.epsilon:.6f} | Reward: {env.reward_dec:.3f} ")
-    plt.plot(running_avg)
-    plt.savefig('avg_scores.png')
+    # plt.plot(running_avg)
+    # plt.savefig('avg_scores.png')
 
 
 
