@@ -7,7 +7,7 @@ from support.dataset import retrieve_data
 
 
 class Env(object):
-    def __init__(self, investment=25000, IMG_SIZE=32, patches=16):
+    def __init__(self, investment=20000, IMG_SIZE=48, patches=9):
         self.data = retrieve_data()
         self.investment = investment
         self.usd_wallet = None
@@ -22,7 +22,7 @@ class Env(object):
         self.n_step, self.n_headers = self.data.shape
         dim_size = int(self.patches / 2)
         self.dim_len = self.n_headers * dim_size * dim_size
-        self.observation_space = np.zeros((patches, self.dim_len), dtype=np.float32)
+        self.observation_space = np.zeros((patches, 1024), dtype=np.float32)
         self.action_set = np.arange(17)
         self.action_space = spaces.Discrete(len(self.action_set))
         self.viewer = None
@@ -62,19 +62,19 @@ class Env(object):
         
         
         if new_holdings > prev_holdings:
-            reward = reward_sparse + 1
+            reward = reward_sparse + 100
         else:
-            reward = reward_sparse - 1
+            reward = reward_sparse - 100
         
         if done:
-            if self.total > self.investment * 2:
-                reward += 10.0
+            if self.total > self.investment:
+                reward += 200.0
             else:
                 reward += 0.0
                 
         info = {"Wallet Total": self.total}
         
-        self.reward_dec = self.reward_dec - 2e-6 if self.reward_dec > 0 else 0
+        self.reward_dec = self.reward_dec - 1e-6 if self.reward_dec > 0 else 0
         return self._get_obs(), reward, done,info
         
         
@@ -182,14 +182,14 @@ class Env(object):
     def _get_obs(self):
         img = self._vec_to_image()
         state = self.observation_space
-        row,col = 8,8
-        for i in range(16):
-            out = img[:, row-8:row , col-8:col]
+        row,col = 16,16
+        for i in range(self.patches):
+            out = img[:, row-16:row , col-16:col]
             img_flat = out.reshape(-1)
             state[i] = img_flat
             if i + 1 % 4 == 0:
-                row += 8
-                col = 8
+                row += 16
+                col = 16
 
         return state
 

@@ -5,12 +5,12 @@ from support.memory import ReplayBuffer
 
 
 class Agent(object):
-    def __init__(self, input_dims, n_actions, env, embed_len=256,
+    def __init__(self, input_dims, n_actions, env, 
                  epsilon=1.0, batch_size=32, eps_dec=4.5e-7, replace=1000, nheads=4,
-                 gamma=0.99, capacity=100000, n_patches=16, transformer_layers=1,lr=0.0003, gate_layers=1):
+                 gamma=0.99, capacity=100000, transformer_layers=1,lr=0.0003, gate_layers=1):
         self.input_dims = input_dims
         self.gamma = gamma
-        self.embed_len = embed_len
+        self.embed_len = env.observation_space.shape[1]
         self.n_actions = n_actions
         self.batch_size = batch_size
         self.epsilon = epsilon
