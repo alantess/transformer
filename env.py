@@ -51,30 +51,30 @@ class Env(object):
         # Add up wallet after making a trade
         new_holdings = self.btc_wallet + self.usd_wallet
 
-        reward_sparse = (new_holdings / prev_holdings) * self.reward_dec * 0.5
+        reward_sparse = ((new_holdings / prev_holdings) * self.reward_dec) * 0.5
         self.total = new_holdings
         
         # Lose than 5% of investment--> then quit, Otherwise continue
         if new_holdings < self.investment - (self.investment * .05):
             done = True
         else:
-            done = self.time_step == self.n_step - 121 
+            done = self.time_step >= self.n_step - 256 
         
         
         if new_holdings > prev_holdings:
-            reward = reward_sparse + 100
+            reward = reward_sparse + 10
         else:
-            reward = reward_sparse - 100
+            reward = reward_sparse - 10
         
         if done:
             if self.total > self.investment:
-                reward += 200.0
+                reward += 20.0
             else:
                 reward += 0.0
                 
         info = {"Wallet Total": self.total}
         
-        self.reward_dec = self.reward_dec - 1e-6 if self.reward_dec > 0 else 0
+        self.reward_dec = self.reward_dec - 2e-6 if self.reward_dec > 0 else 0
         return self._get_obs(), reward, done,info
         
         

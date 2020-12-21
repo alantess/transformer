@@ -9,15 +9,17 @@ import matplotlib.pyplot as plt
 
 
 if __name__ == '__main__':
-    np.random.seed(39)
+    np.random.seed(44)
     torch.cuda.empty_cache()
+    torch.backends.cudnn.benchmark = True
     # # Create environment
     env = Env()
+
     # Create Agent
     # Epsilon is set to 1e-6 * 4 steps, takes 1M steps to reach 0.01
-    agent = Agent(env.observation_space.shape[0],env.action_set.shape[0],env,capacity=650000,nheads=4, batch_size=128,transformer_layers=9, eps_dec=4.25e-6, replace=10000, lr=0.00025)
+    agent = Agent(env.observation_space.shape[0],env.action_set.shape[0],env,capacity=500000,nheads=4, batch_size=128,transformer_layers=6, eps_dec=8.5e-6, replace=5000, lr=0.00045, epsilon=0.6)
     print("Model Parameters: ",agent.count_params())
-    # agent.load()
+    agent.load()
 
     # Variables needed for reward tracking
     scores, running_avg = [], []
@@ -35,7 +37,7 @@ if __name__ == '__main__':
             obs_ , reward, done, info = env.step(action)
             score += reward
             agent.store_transition(obs, action, reward, obs_, done)
-            if n_steps % 3 == 0:
+            if n_steps % 4 == 0:
                 agent.learn()
             obs = obs_
             n_steps +=1
