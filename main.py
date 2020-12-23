@@ -17,9 +17,9 @@ if __name__ == '__main__':
 
     # Create Agent
     # Epsilon is set to 1e-6 * 4 steps, takes 1M steps to reach 0.01
-    agent = Agent(env.observation_space.shape[0],env.action_set.shape[0],env,capacity=500000,nheads=4, batch_size=128,transformer_layers=6, eps_dec=8.5e-6, replace=5000, lr=0.00045, epsilon=0.6)
+    agent = Agent(env.observation_space.shape[0],env.action_set.shape[0],env,capacity=100000,nheads=4, batch_size=64,transformer_layers=1, eps_dec=8.5e-7, replace=5000, lr=0.00045)
     print("Model Parameters: ",agent.count_params())
-    agent.load()
+    # agent.load()
 
     # Variables needed for reward tracking
     scores, running_avg = [], []

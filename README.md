@@ -9,6 +9,12 @@
 ## Transfomer Gating Architecture 
 <a href="https://lilianweng.github.io/lil-log/assets/images/gated-transformer-XL.png" rel="Transformer">![Transformer](https://lilianweng.github.io/lil-log/assets/images/gated-transformer-XL.png)</a>
 
+## Run 
+```sh
+$ cd transformer
+$ python main.py
+```
+
 Directory Structure
 ------
     .
@@ -25,9 +31,8 @@ Directory Structure
 ------
 # TODO 
 - [x] Apply DDQN algorithm. 
-- [ ] Improve environement. 
-- [ ] Tune hyperparameters. 
-- [ ] Apply SAC algorithm.
+- [x] Improve environement. 
+- [x] Tune hyperparameters. 
 
 
 
