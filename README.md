@@ -10,7 +10,7 @@
 <a href="https://lilianweng.github.io/lil-log/assets/images/gated-transformer-XL.png" rel="Transformer">![Transformer](https://lilianweng.github.io/lil-log/assets/images/gated-transformer-XL.png)</a>
 
 ### Explanation
-- Take OLHC  ➱ GAF Summation Image  ➱ Split into 16 patches x 1024 (flatten dimension) at every step ➱ Agent uses the image to estimate Q-value & action  
+- Take OLHC  ➱ GAF Summation Image  ➱ Split into 16 patches x 1024 (4x16x16) at every step ➱ Agent uses the image to estimate Q-value & action  
 ## Run 
 ```sh
 $ cd transformer
