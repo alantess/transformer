@@ -12,6 +12,7 @@
 ## Run 
 ```sh
 $ cd transformer
+$ mkdir models
 $ python main.py
 ```
 
