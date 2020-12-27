@@ -1,6 +1,7 @@
 import os
 import torch as T
 import torch.optim as optim
+import torch.nn.functional as F
 import torch.nn as nn
 from typing import Optional
 from torch.nn import TransformerEncoder, TransformerEncoderLayer
@@ -67,7 +68,8 @@ class GTrXL(nn.Module):
         self.embed = PositionalEncoding(d_model)
         encoded = TEL(d_model, nheads, n_layers)
         self.transfomer = TransformerEncoder(encoded, transformer_layers)
-        self.out = nn.Linear(d_model, n_actions)
+        self.fc1 = nn.Linear(d_model, 50)
+        self.out = nn.Linear(50, n_actions)
         # Module components devices, optimizer, files, etc
         self.device = T.device('cuda')
         self.to(self.device)
@@ -77,6 +79,7 @@ class GTrXL(nn.Module):
     def forward(self, x):
         x = self.embed(x)
         x = self.transfomer(x)
+        x = F.relu(self.fc1(x)) 
         x = self.out(x)
         return x
 
