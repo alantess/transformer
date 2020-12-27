@@ -17,7 +17,7 @@ if __name__ == '__main__':
 
     # Create Agent
     # Epsilon is set to 1e-6 * 4 steps, takes 1M steps to reach 0.01
-    agent = Agent(env.observation_space.shape[0],env.action_set.shape[0],env,capacity=200000,nheads=4, batch_size=128,transformer_layers=1, eps_dec=3.5e-6, replace=5000, lr=0.00045)
+    agent = Agent(env.observation_space.shape[0],env.action_set.shape[0],env,capacity=200000,nheads=4, batch_size=128,transformer_layers=12, eps_dec=3.5e-6, replace=10000, lr=0.00045)
     print("Model Parameters: ",agent.count_params())
     # agent.load()
 
