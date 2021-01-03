@@ -21,7 +21,7 @@ $ python main.py
 ```
 
 ## Performance
-[Transformer](btc_scores.png)
+![(Performance on training data [1]) Performance](btc_scores.png "Training Set (1-Episode)")
 
 Directory Structure
 ------
