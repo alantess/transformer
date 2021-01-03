@@ -9,6 +9,8 @@
 ## Transfomer Gating Architecture 
 <a href="https://lilianweng.github.io/lil-log/assets/images/gated-transformer-XL.png" rel="Transformer">![Transformer](https://lilianweng.github.io/lil-log/assets/images/gated-transformer-XL.png)</a>
 
+
+
 ### Explanation
 - Take OLHC  ➱ GAF Summation Image  ➱ Split into 16 patches x 1024 (4x16x16) at every step ➱ Agent uses the image to estimate Q-value & action  
 ## Run 
@@ -18,7 +20,10 @@ $ mkdir models
 $ python main.py
 ```
 
-Directory Structure
+## Performance
+![(Performance on training data [1]) Performance](btc_scores.png "Training Set (1-Episode)")
+![(Performance on test data [1]) Performance](avg_scores_ltc_2.png "Testing Set (1-Episode)")
+# Directory Structure
 ------
     .
     main.py                 # Main controller 
