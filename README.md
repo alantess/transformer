@@ -23,7 +23,7 @@ $ python main.py
 ## Performance
 ![(Performance on training data [1]) Performance](btc_scores.png "Training Set (1-Episode)")
 ![(Performance on test data [1]) Performance](avg_scores_ltc_2.png "Testing Set (1-Episode)")
-Directory Structure
+# Directory Structure
 ------
     .
     main.py                 # Main controller 
