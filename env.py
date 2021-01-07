@@ -190,6 +190,13 @@ class Env(object):
             if i + 1 % 4 == 0:
                 row += 16
                 col = 16
+                if row > self.img_size:
+                    row = 16
+            else: 
+                col += 16
+                if col > self.img_size:
+                    col = 16
+            
 
         return state
 
