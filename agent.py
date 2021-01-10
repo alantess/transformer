@@ -38,6 +38,13 @@ class Agent(object):
 
         return action
 
+
+    def save_script(self):
+        print("Saving torch script...")
+        q_eval_script = T.jit.script(self.q_eval)
+        q_eval_script.save("q_eval_script.pt")
+        print(q_eval_script)
+
     def update_target_network(self):
         if self.update_cntr % self.replace == 0:
             self.q_eval.load_state_dict(self.q_train.state_dict())
