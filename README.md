@@ -5,6 +5,7 @@
 - *Turn OLHC [open, low, high close] into an Image* ➱ [Click Here](https://arxiv.org/abs/1901.05237)
 - *Using a transformer model on images* ➱[ Click Here](https://arxiv.org/abs/2010.11929)
 - *Alterations to the transformer model (**GTrXL**)* ➱ [Click Here](https://arxiv.org/abs/1910.06764)
+- *Deep Reinforcement Learning with Double Q-learning* ➱ [Click Here](https://arxiv.org/abs/1509.06461)
 
 ## Transfomer Gating Architecture 
 <a href="https://lilianweng.github.io/lil-log/assets/images/gated-transformer-XL.png" rel="Transformer">![Transformer](https://lilianweng.github.io/lil-log/assets/images/gated-transformer-XL.png)</a>
