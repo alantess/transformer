@@ -43,6 +43,8 @@ $ python main.py
 - [x] Improve environement. 
 - [x] Tune hyperparameters. 
 
+# Transformer Package
+- For more about the transformer model click [here](https://github.com/alantess/gtrxl-torch)
 
 
 
