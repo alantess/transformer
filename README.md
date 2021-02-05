@@ -1,6 +1,8 @@
 # Transformer on Crypto
  - ✨  **GOAL:** Build an agent that can trade currencies profitably.
  - ✨  **Install model package:** Click [here](https://github.com/alantess/gtrxl-torch).
+  - ✨  **C++ Version:** Click [here]( https://github.com/alantess/DDQN-BTC/tree/cpp)
+
 ## Inspirations 
 **This project uses Reinforcement Learning methods on cryptocurrencies.**
 - *Turn OLHC [open, low, high close] into an Image* ➱ [Click Here](https://arxiv.org/abs/1901.05237)
