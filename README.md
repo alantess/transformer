@@ -19,27 +19,35 @@
 - Take OLHC  ➱ GAF Summation Image  ➱ Split into 16 patches x 1024 (4x16x16) at every step ➱ Agent uses the image to estimate Q-value & action  
 ## Run 
 ```sh
-$ cd transformer
-$ mkdir models
+$ cd transformer/transformer
 $ python main.py
 ```
 
 ## Performance
-![(Performance on training data [1]) Performance](btc_scores.png "Training Set (1-Episode)")
-![(Performance on test data [1]) Performance](avg_scores_ltc_2.png "Testing Set (1-Episode)")
+![(Performance on training data [1]) Performance](etc/btc_scores.png "Training Set (1-Episode)")
+![(Performance on test data [1]) Performance](etc/avg_scores_ltc_2.png "Testing Set (1-Episode)")
 # Directory Structure
 ------
     .
-    main.py                 # Main controller 
-    agent.py                # Holds the agent class
-    env.py                  # Creates an environment
-    test.py                 # Unittest on components
-    ├── Models              # Holds saved models
-    └── Support             #  Code needed to build  project
-        ├── dataset.py      #  Turns CSV dataset into an array
-        ├──Memory.py        # Agent's Replay Buffer
-        ├──Transformer.py   #  Transformer model
-
+    ├── common
+    │   ├── env.py
+    │   ├── memory.py
+    │   ├── run.py
+    │   └── transformer.py
+    ├── etc
+    │   ├── avg_scores_ltc_2.png
+    │   └── btc_scores.png
+    ├── examples
+    │   └── torchscript
+    │       └── main.cpp
+    ├── README.md
+    └── transformer
+        ├── agent.py
+        ├── main.py
+        ├── models
+        │   ├── q_eval.pt
+        │   └── q_train.pt
+        └── test.py
 ------
 # TODO 
 - [x] Apply DDQN algorithm. 
