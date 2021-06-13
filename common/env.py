@@ -180,6 +180,12 @@ class Env(object):
         self.crypto_wallet *= self.data[self.time_step +
                                         self.img_size][3] / self.price
 
+    def animate(self, i):
+        pass
+
+    def show_progress(self):
+        pass
+
     # Splits the image into patches (16) & flattens
     def _get_obs(self):
         img = self._vec_to_image()

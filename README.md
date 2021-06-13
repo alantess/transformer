@@ -1,7 +1,7 @@
 # Transformer on Crypto
+<img src="etc/logo.png">
  - ✨  **GOAL:** Build an agent that can trade currencies profitably.
- - ✨  **Install model package:** Click [here](https://github.com/alantess/gtrxl-torch).
-  - ✨  **C++ Version:** Click [here]( https://github.com/alantess/DDQN-BTC/tree/cpp)
+ - ✨  **C++ Version:** Click [here]( https://github.com/alantess/DDQN-BTC/tree/cpp)
 
 ## Inspirations 
 **This project uses Reinforcement Learning methods on cryptocurrencies.**
@@ -13,11 +13,7 @@
 ## Transfomer Gating Architecture 
 <a href="https://lilianweng.github.io/lil-log/assets/images/gated-transformer-XL.png" rel="Transformer">![Transformer](https://lilianweng.github.io/lil-log/assets/images/gated-transformer-XL.png)</a>
 
-
-
-### Explanation
-- Take OLHC  ➱ GAF Summation Image  ➱ Split into 16 patches x 1024 (4x16x16) at every step ➱ Agent uses the image to estimate Q-value & action  
-### Train 
+## Execute 
 ```sh
  cd transformer/transformer
  python main.py
