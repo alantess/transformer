@@ -1,4 +1,6 @@
   <img src="etc/logo.png">
+
+------
 What is transformer?
 ------
   Transfomer is a smart reinforcment learning agent that can profitably trade cryptocurrencies for $USD. The agent is called **transformer** because of its transfomer based model is used to determine the most optimally action. 
@@ -12,9 +14,6 @@ What is transformer?
 ```sh
  python main.py --train False
 ```
-## Performance
-![(Performance on training data [1]) Performance](etc/btc_scores.png "Training Set (1-Episode)")
-![(Performance on test data [1]) Performance](etc/avg_scores_ltc_2.png "Testing Set (1-Episode)")
 # Directory Structure
 ------
     .
