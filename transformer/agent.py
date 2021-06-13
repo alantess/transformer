@@ -1,13 +1,24 @@
 import torch as T
 import numpy as np
-from support.transformer import GTrXL
-from support.memory import ReplayBuffer
+from common.memory import ReplayBuffer
+from common.transformer import Transformer
+from torch.cuda.amp import autocast, GradScaler
 
 
 class Agent(object):
-    def __init__(self, input_dims, n_actions, env, 
-                 epsilon=1.0, batch_size=32, eps_dec=4.5e-7, replace=1000, nheads=4,
-                 gamma=0.99, capacity=100000, transformer_layers=1,lr=0.0003, gate_layers=1):
+    def __init__(self,
+                 input_dims,
+                 n_actions,
+                 env,
+                 epsilon=1.0,
+                 batch_size=32,
+                 eps_dec=4.5e-7,
+                 replace=1000,
+                 nheads=4,
+                 gamma=0.99,
+                 capacity=100000,
+                 transformer_layers=1,
+                 lr=0.0003):
         self.input_dims = input_dims
         self.gamma = gamma
         self.embed_len = env.observation_space.shape[1]
@@ -19,25 +30,39 @@ class Agent(object):
         self.eps_min = 0.01
         self.update_cntr = 0
         self.env = env
+        self.scaler = GradScaler()
         # Replay Buffer
-        self.memory = ReplayBuffer(capacity=capacity, input_dims=self.input_dims, n_actions=self.n_actions,
+        self.memory = ReplayBuffer(capacity=capacity,
+                                   input_dims=self.input_dims,
+                                   n_actions=self.n_actions,
                                    embed_len=self.embed_len)
 
         # Evaluation Network
-        self.q_eval = GTrXL(self.embed_len, nheads, gate_layers, n_actions, transformer_layers, network_name="q_eval", lr=lr)
+        self.q_eval = Transformer(self.embed_len,
+                                  nheads,
+                                  n_actions,
+                                  transformer_layers,
+                                  network_name="q_eval",
+                                  lr=lr)
         # Training Network
-        self.q_train = GTrXL(self.embed_len, nheads, gate_layers, n_actions, transformer_layers, network_name="q_train",lr=lr)
+        self.q_train = Transformer(self.embed_len,
+                                   nheads,
+                                   n_actions,
+                                   transformer_layers,
+                                   network_name="q_train",
+                                   lr=lr)
 
     def pick_action(self, obs):
         if np.random.random() > self.epsilon:
             state = T.tensor(obs, dtype=T.float).to(self.q_eval.device)
-            output = self.q_eval.forward(state).sum(dim=0).mean(dim=0).argmax(dim=0)
+            with autocast():
+                output = self.q_eval.forward(state).sum(dim=0).mean(
+                    dim=0).argmax(dim=0)
             action = output.item()
         else:
             action = self.env.action_space.sample()
 
         return action
-
 
     def save_script(self):
         print("Saving torch script...")
@@ -53,17 +78,17 @@ class Agent(object):
     def store_transition(self, state, action, reward, state_, done):
         self.memory.store_transition(state, action, reward, state_, done)
 
-
     def decrement_epsilon(self):
-        self.epsilon = self.epsilon - self.eps_dec  if self.epsilon > self.eps_min else self.eps_min
+        self.epsilon = self.epsilon - self.eps_dec if self.epsilon > self.eps_min else self.eps_min
 
     # Agent's Learn Function
     def learn(self):
         if self.memory.mem_cntr < self.batch_size:
             return
 
-        # Sample from memory 
-        states, actions, rewards, states_, dones = self.memory.sample_buffer(self.batch_size)
+        # Sample from memory
+        states, actions, rewards, states_, dones = self.memory.sample_buffer(
+            self.batch_size)
         # Numpy to Tensor
         states = T.tensor(states, dtype=T.float).to(self.q_eval.device)
         actions = T.tensor(actions, dtype=T.int64).to(self.q_eval.device)
@@ -78,27 +103,29 @@ class Agent(object):
         self.update_target_network()
 
         indices = np.arange(self.batch_size)
-        
-        # Estimate Q 
-        q_pred = self.q_train.forward(states).mean(dim=1) 
-        q_pred *= actions
-        q_pred = q_pred.mean(dim=1)
-        q_next = self.q_eval.forward(states_).mean(dim=1)
-        q_train = self.q_train.forward(states_).mean(dim=1)
 
-        q_next[done] = 0.0
-        max_action = T.argmax(q_train,dim=1)
+        # Estimate Q
+        with autocast():
+            q_pred = self.q_train.forward(states).mean(dim=1)
+            q_pred *= actions
+            q_pred = q_pred.mean(dim=1)
+            q_next = self.q_eval.forward(states_).mean(dim=1)
+            q_train = self.q_train.forward(states_).mean(dim=1)
 
-        y = rewards + self.gamma * q_next[indices, max_action]
+            q_next[done] = 0.0
+            max_action = T.argmax(q_train, dim=1)
 
-        loss = self.q_train.loss(y,q_pred).to(self.q_eval.device)
-        loss.backward()
+            y = rewards + self.gamma * q_next[indices, max_action]
 
-        self.q_train.optimizer.step()
+            loss = self.q_train.loss(y, q_pred).to(self.q_eval.device)
+        # loss.backward()
+        # self.q_train.optimizer.step()
+        self.scaler.scale(loss).backward()
+        self.scaler.step(self.q_train.optimizer)
+        self.scaler.update()
 
         self.update_cntr += 1
         self.decrement_epsilon()
-
 
     # Save weights
     def save(self):

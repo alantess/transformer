@@ -17,12 +17,15 @@
 
 ### Explanation
 - Take OLHC  ➱ GAF Summation Image  ➱ Split into 16 patches x 1024 (4x16x16) at every step ➱ Agent uses the image to estimate Q-value & action  
-## Run 
+### Train 
 ```sh
-$ cd transformer/transformer
-$ python main.py
+ cd transformer/transformer
+ python main.py
 ```
-
+- For testing set the train argument to false.
+```sh
+ python main.py --train False
+```
 ## Performance
 ![(Performance on training data [1]) Performance](etc/btc_scores.png "Training Set (1-Episode)")
 ![(Performance on test data [1]) Performance](etc/avg_scores_ltc_2.png "Testing Set (1-Episode)")
