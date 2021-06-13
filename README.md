@@ -42,9 +42,8 @@ What is transformer?
         └── test.py # Test Agent, Environment and Model Functionality
 ------
 # TODO 
-- [x] Apply DDQN algorithm. 
-- [x] Improve environement. 
-- [x] Tune hyperparameters. 
+- [  ] Generate a candle / grammian image dataset. 
+- [  ] Improve execution time
 
 ## Inspirations 
 **This project uses Reinforcement Learning methods on cryptocurrencies.**
