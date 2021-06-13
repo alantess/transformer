@@ -1,19 +1,7 @@
   <img src="etc/logo.png">
----
-
 What is transformer?
 ------
-  Transfomer is a smart reinforcment learning agent that can profitably trade cryptocurrencies for $USD. The agent is called *transformer* becuase of its transfomer based model is used to determine the most optimally action. 
-
-## Inspirations 
-**This project uses Reinforcement Learning methods on cryptocurrencies.**
-- *Turn OLHC [open, low, high close] into an Image* ➱ [Click Here](https://arxiv.org/abs/1901.05237)
-- *Using a transformer model on images* ➱[ Click Here](https://arxiv.org/abs/2010.11929)
-- *Alterations to the transformer model (**GTrXL**)* ➱ [Click Here](https://arxiv.org/abs/1910.06764)
-- *Deep Reinforcement Learning with Double Q-learning* ➱ [Click Here](https://arxiv.org/abs/1509.06461)
-
-## Transfomer Gating Architecture 
-<a href="https://lilianweng.github.io/lil-log/assets/images/gated-transformer-XL.png" rel="Transformer">![Transformer](https://lilianweng.github.io/lil-log/assets/images/gated-transformer-XL.png)</a>
+  Transfomer is a smart reinforcment learning agent that can profitably trade cryptocurrencies for $USD. The agent is called **transformer** because of its transfomer based model is used to determine the most optimally action. 
 
 ## Execute 
 ```sh
@@ -54,6 +42,18 @@ What is transformer?
 - [x] Apply DDQN algorithm. 
 - [x] Improve environement. 
 - [x] Tune hyperparameters. 
+
+## Inspirations 
+**This project uses Reinforcement Learning methods on cryptocurrencies.**
+- *Turn OLHC [open, low, high close] into an Image* ➱ [Click Here](https://arxiv.org/abs/1901.05237)
+- *Using a transformer model on images* ➱[ Click Here](https://arxiv.org/abs/2010.11929)
+- *Alterations to the transformer model (**GTrXL**)* ➱ [Click Here](https://arxiv.org/abs/1910.06764)
+- *Deep Reinforcement Learning with Double Q-learning* ➱ [Click Here](https://arxiv.org/abs/1509.06461)
+
+
+## Transfomer Gating Architecture 
+<a href="https://lilianweng.github.io/lil-log/assets/images/gated-transformer-XL.png" rel="Transformer">![Transformer](https://lilianweng.github.io/lil-log/assets/images/gated-transformer-XL.png)</a>
+
 
 # Transformer Package
 - For more about the transformer model click [here](https://github.com/alantess/gtrxl-torch)
