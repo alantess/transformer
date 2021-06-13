@@ -15,7 +15,6 @@ def run(agent, env, n_epsidoes, load_agent=True, train_model=True):
         state = env.reset()
         score = 0
         while not done:
-            # env.render()
             action = agent.pick_action(state)
             state_, reward, done, info = env.step(action)
             score += float(reward)
@@ -27,8 +26,10 @@ def run(agent, env, n_epsidoes, load_agent=True, train_model=True):
             cur_step += 1
         history.append(score)
         scores.append(score)
+        if not train_model:
+            env.show_progress()
         print(f"Episode({epi}): SCORE: {score:.2f} BEST: {best:.2f} \
-                TOTAL: {info['wallets']:.2f} \n \
+                TOTAL: {float(info['wallets']):.2f} \n \
                     EPS: {agent.epsilon:.6f}  Steps: {cur_step} \
                     \nTime: {time() - start_time:.2f}")
         if (epi + 1) % 10 == 0:
@@ -37,5 +38,3 @@ def run(agent, env, n_epsidoes, load_agent=True, train_model=True):
             if avg > best:
                 best = avg
                 agent.save()
-
-    # env.close()

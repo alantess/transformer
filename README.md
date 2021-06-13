@@ -17,25 +17,29 @@ What is transformer?
 # Directory Structure
 ------
     .
-    ├── common
-    │   ├── env.py
-    │   ├── memory.py
-    │   ├── run.py
-    │   └── transformer.py
+    ├── common # Support Files
+    │   ├── create_dataset.py # Creates a dataset of images
+    │   ├── env.py # Stores environement
+    │   ├── memory.py # Replay Buffer
+    │   ├── run.py # Executes agent/environement interaction 
+    │   └── transformer.py # Models
     ├── etc
     │   ├── avg_scores_ltc_2.png
-    │   └── btc_scores.png
-    ├── examples
+    │   ├── btc_scores.png
+    │   ├── btc_trend.png
+    │   └── logo.png
+    ├── examples (Depreciated)
     │   └── torchscript
     │       └── main.cpp
     ├── README.md
-    └── transformer
-        ├── agent.py
+    ├── requirements.txt
+    └── transformer # Controller
+        ├── agent.py 
         ├── main.py
         ├── models
         │   ├── q_eval.pt
         │   └── q_train.pt
-        └── test.py
+        └── test.py # Test Agent, Environment and Model Functionality
 ------
 # TODO 
 - [x] Apply DDQN algorithm. 

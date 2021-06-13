@@ -1,20 +1,33 @@
 from gym import spaces
 import numpy as np
 import cudf
+import pandas as pd
 from pyts.image import GramianAngularField
+import matplotlib
+import matplotlib.pyplot as plt
+
+matplotlib.use('TkAgg')
 
 
 class Env(object):
-    def __init__(self, investment=20000, IMG_SIZE=48, patches=9):
+    def __init__(self,
+                 investment=20000,
+                 IMG_SIZE=48,
+                 patches=9,
+                 stop_loss=0.35,
+                 use_cuda=True):
+        self.usd_cuda = use_cuda
         self.data = self._load()
         self.investment = investment
         self.usd_wallet = None
         self.crypto_wallet = None
         self.price = None
         self.reward_dec = 1.0
+        self.stop_loss = stop_loss
         self.img_size = IMG_SIZE
         self.time_step = IMG_SIZE
         self.profits = []
+        self.price_history = []
         self.gasf = GramianAngularField(image_size=IMG_SIZE,
                                         method='summation')
         self.patches = patches
@@ -26,13 +39,25 @@ class Env(object):
         self.action_space = spaces.Discrete(len(self.action_set))
         self.viewer = None
         self.total = 0
-        self.reset()
+        self.x = None
 
     def _load(self):
-        csv_file = "/media/alan/seagate/dataset/binance_BTCUSDT_5m.csv"
-        df = cudf.read_csv(csv_file)
-        df = df.drop(columns=['Date', 'Time', 'Volume'])
+        print('Loading Environment...')
+        csv_file = "/media/alan/seagate/Downloads/Binance_BTCUSDT_minute.csv"
+        columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume']
+        if self.usd_cuda:
+            df = cudf.read_csv(csv_file)
+        else:
+            df = pd.read_csv(csv_file)
+        df = df.drop(columns=['unix', 'symbol', 'Volume USDT', 'tradecount::'])
+        df.columns = columns
+        if self.usd_cuda:
+            df.index = cudf.DatetimeIndex(df['Date'])
+        else:
+            df.index = pd.DatetimeIndex(df['Date'])
+        df = df.drop(columns=['Date', 'Volume'])
         df = df.dropna()
+        df = df[::-1]
         data = df.values
         return data
 
@@ -40,7 +65,7 @@ class Env(object):
         self.time_step = self.img_size
         self.crypto_wallet = 0
         self.usd_wallet = self.investment
-        self.profits = []
+        self.profits, self.price_history = [], []
         self.total = 0
         self._get_price()
         return self._get_obs()
@@ -49,6 +74,7 @@ class Env(object):
     def step(self, action):
         assert action in self.action_set
         self._get_price()
+        self.price_history.append(self.price)
         reward = 0.0
         # Add up wallets
         prev_holdings = self.crypto_wallet + self.usd_wallet
@@ -57,13 +83,14 @@ class Env(object):
         self.time_step += self.img_size
         # Add up wallet after making a trade
         new_holdings = self.crypto_wallet + self.usd_wallet
+        self.profits.append(new_holdings)
 
         reward_sparse = (
             (new_holdings / prev_holdings) * self.reward_dec) * 0.1
         self.total = new_holdings
 
         # Lose than 35% of investment--> then quit, Otherwise continue
-        if new_holdings < self.investment - (self.investment * .35):
+        if new_holdings < self.investment - (self.investment * self.stop_loss):
             done = True
         else:
             done = self.time_step >= self.n_step - 256
@@ -161,10 +188,14 @@ class Env(object):
     # Turns state vector into a GAF 'Summation'
     def _vec_to_image(self):
         state = self._create_state()
-        # Turn state vector into image (3xHxW)
-        vec_to_img = np.transpose(state)
+        vec_to_img = np.transpose(state)  # HEADERS x IMG_SIZE
         # Transform to GAF Summation
-        state_img = self.gasf.transform(vec_to_img.get())
+        # Turn state vector into image (HEADERSxHxW)
+        if self.usd_cuda:
+            state_img = self.gasf.transform(vec_to_img.get())
+        else:
+            state_img = self.gasf.transform(vec_to_img)
+
         return state_img
 
     @property
@@ -177,14 +208,14 @@ class Env(object):
         self.price = self.data[self.time_step][3]
 
     def _update_crypto_wallet(self):
-        self.crypto_wallet *= self.data[self.time_step +
-                                        self.img_size][3] / self.price
-
-    def animate(self, i):
-        pass
+        self.crypto_wallet *= (self.data[self.time_step + self.img_size][3] /
+                               self.price)
 
     def show_progress(self):
-        pass
+        plt.plot(self.price_history, label='Close Prices')
+        plt.plot(self.profits, label='Earnings')
+        plt.legend()
+        plt.show()
 
     # Splits the image into patches (16) & flattens
     def _get_obs(self):

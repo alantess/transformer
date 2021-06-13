@@ -4,9 +4,10 @@ sys.path.insert(0, '..')
 import argparse
 import torch
 from common.env import Env
-from common.run import run
+from common.run import *
 import numpy as np
 from agent import Agent
+import torch.multiprocessing as mp
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -42,7 +43,7 @@ if __name__ == '__main__':
     torch.cuda.empty_cache()
     torch.backends.cudnn.benchmark = True
     # Create environment
-    env = Env()
+    env = Env(use_cuda=True)
 
     # Create Agent
     agent = Agent(env.observation_space.shape[0],
