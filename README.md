@@ -1,7 +1,9 @@
-# Transformer on Crypto
-<img src="etc/logo.png">
- - ✨  **GOAL:** Build an agent that can trade currencies profitably.
- - ✨  **C++ Version:** Click [here]( https://github.com/alantess/DDQN-BTC/tree/cpp)
+  <img src="etc/logo.png">
+---
+
+What is transformer?
+------
+  Transfomer is a smart reinforcment learning agent that can profitably trade cryptocurrencies for $USD. The agent is called *transformer* becuase of its transfomer based model is used to determine the most optimally action. 
 
 ## Inspirations 
 **This project uses Reinforcement Learning methods on cryptocurrencies.**
