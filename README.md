@@ -42,8 +42,8 @@ What is transformer?
         └── test.py # Test Agent, Environment and Model Functionality
 ------
 # TODO 
-- [  ] Generate a candle / grammian image dataset. 
-- [  ] Improve execution time
+- [ ] Generate a candle / grammian image dataset. 
+- [ ] Improve execution time
 
 ## Inspirations 
 **This project uses Reinforcement Learning methods on cryptocurrencies.**
