@@ -8,23 +8,23 @@ from gtrxl_torch.gtrxl_torch import GTrXL
 class Encoder(nn.Module):
     def __init__(self):
         super(Encoder, self).__init__()
-        self.convs_gasf = nn.Sequntial(nn.Conv2d(5, 32, 4, 6), nn.ReLU(),
+        self.convs_gasf = nn.Sequential(nn.Conv2d(5, 32, 4, 6), nn.ReLU(),
+                                        nn.Conv2d(32, 64, 4, 2), nn.ReLU(),
+                                        nn.Conv2d(64, 64, 2, 1), nn.ReLU())
+
+        self.convs_gadf = nn.Sequential(nn.Conv2d(5, 32, 4, 6), nn.ReLU(),
+                                        nn.Conv2d(32, 64, 4, 2), nn.ReLU(),
+                                        nn.Conv2d(64, 64, 2, 1), nn.ReLU())
+
+        self.convs_mtf = nn.Sequential(nn.Conv2d(5, 32, 4, 6), nn.ReLU(),
                                        nn.Conv2d(32, 64, 4, 2), nn.ReLU(),
                                        nn.Conv2d(64, 64, 2, 1), nn.ReLU())
-
-        self.convs_gadf = nn.Sequntial(nn.Conv2d(5, 32, 4, 6), nn.ReLU(),
-                                       nn.Conv2d(32, 64, 4, 2), nn.ReLU(),
-                                       nn.Conv2d(64, 64, 2, 1), nn.ReLU())
-
-        self.convs_mtf = nn.Sequntial(nn.Conv2d(5, 32, 4, 6), nn.ReLU(),
-                                      nn.Conv2d(32, 64, 4, 2), nn.ReLU(),
-                                      nn.Conv2d(64, 64, 2, 1), nn.ReLU())
 
     def forward(self, x):
         gasf = self.convs_gasf(x[:, 0]).flatten(2)
         gadf = self.convs_gadf(x[:, 1]).flatten(2)
         mtf = self.convs_mtf(x[:, 2]).flatten(2)
-        x = T.cat([gasf, gadf, mtf], dim=2).permute(1, 0, 2)
+        x = T.cat([gasf, gadf, mtf], dim=2)
         return x
 
 
@@ -42,8 +42,8 @@ class TimeModel(nn.Module):
                  network_name='time_model'):
         super(TimeModel, self).__init__()
         self.encoder = Encoder()
-        self.decoder = GTrXL(48, nheads, t_layers)
-        self.hidden_layer = nn.Linear(48, fc_neurons)
+        self.decoder = GTrXL(12, nheads, t_layers)
+        self.hidden_layer = nn.Linear(12, fc_neurons)
         self.out = nn.Linear(fc_neurons, n_actions)
 
         # self.decoder = gtrxl_torch()

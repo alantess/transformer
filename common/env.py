@@ -239,11 +239,6 @@ class Env(object):
         return state
 
 
-"""
-Need to overide the observation_space and get obs
-"""
-
-
 class TimeEnv(Env):
     r"""
     State vector: 3 Time series images
@@ -255,13 +250,14 @@ class TimeEnv(Env):
                  stop_loss=0.35,
                  use_cuda=True):
         super().__init__(investment, IMG_SIZE, patches, stop_loss, use_cuda)
-        self.mtf = MarkovTransitionField(image_size=IMG_SIZE)
+        self.mtf = MarkovTransitionField(image_size=IMG_SIZE, n_bins=3)
         self.gasf = GramianAngularField(image_size=IMG_SIZE,
                                         method='summation')
         self.gadf = GramianAngularField(image_size=IMG_SIZE,
                                         method='difference')
         # Images Field x Fields (Headers) x Size x Size
-        self.observation_space = np.zeros((3, 5, IMG_SIZE, IMG_SIZE))
+        self.observation_space = np.zeros((3, 5, IMG_SIZE, IMG_SIZE),
+                                          dtype=np.float32)
 
     def _load(self):
         print('Loading Environment...')

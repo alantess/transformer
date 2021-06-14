@@ -1,7 +1,7 @@
 import torch as T
 import numpy as np
-from common.memory import ReplayBuffer
-from common.transformer import Transformer
+from common.memory import *
+from common.transformer import *
 from torch.cuda.amp import autocast, GradScaler
 
 
@@ -18,7 +18,8 @@ class Agent(object):
                  gamma=0.99,
                  capacity=100000,
                  transformer_layers=1,
-                 lr=0.0003):
+                 lr=0.0003,
+                 time_model=True):
         self.input_dims = input_dims
         self.gamma = gamma
         self.embed_len = env.observation_space.shape[1]
@@ -31,30 +32,39 @@ class Agent(object):
         self.update_cntr = 0
         self.env = env
         self.scaler = GradScaler()
-        # Replay Buffer
-        self.memory = ReplayBuffer(capacity=capacity,
-                                   input_dims=self.input_dims,
-                                   n_actions=self.n_actions,
-                                   embed_len=self.embed_len)
+        if time_model:
+            self.memory = TimeBuffer(capacity, input_dims, n_actions)
+            self.q_eval = TimeModel(n_actions,
+                                    nheads,
+                                    transformer_layers,
+                                    lr=lr)
 
-        # Evaluation Network
-        self.q_eval = Transformer(self.embed_len,
-                                  nheads,
-                                  n_actions,
-                                  transformer_layers,
-                                  network_name="q_eval",
-                                  lr=lr)
-        # Training Network
-        self.q_train = Transformer(self.embed_len,
-                                   nheads,
-                                   n_actions,
-                                   transformer_layers,
-                                   network_name="q_train",
-                                   lr=lr)
+            self.q_train = TimeModel(n_actions,
+                                     nheads,
+                                     transformer_layers,
+                                     lr=lr)
+        else:
+            self.memory = ReplayBuffer(capacity=capacity,
+                                       input_dims=self.input_dims,
+                                       n_actions=self.n_actions,
+                                       embed_len=self.embed_len)
+
+            self.q_eval = Transformer(self.embed_len,
+                                      nheads,
+                                      n_actions,
+                                      transformer_layers,
+                                      network_name="q_eval",
+                                      lr=lr)
+            self.q_train = Transformer(self.embed_len,
+                                       nheads,
+                                       n_actions,
+                                       transformer_layers,
+                                       network_name="q_train",
+                                       lr=lr)
 
     def pick_action(self, obs):
         if np.random.random() > self.epsilon:
-            state = T.tensor(obs, dtype=T.float).to(self.q_eval.device)
+            state = T.tensor([obs], dtype=T.float).to(self.q_eval.device)
             with autocast():
                 output = self.q_eval.forward(state).sum(dim=0).mean(
                     dim=0).argmax(dim=0)
