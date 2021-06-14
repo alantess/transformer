@@ -2,7 +2,7 @@ from gym import spaces
 import numpy as np
 import cudf
 import pandas as pd
-from pyts.image import GramianAngularField
+from pyts.image import *
 import matplotlib
 import matplotlib.pyplot as plt
 
@@ -192,9 +192,9 @@ class Env(object):
         # Transform to GAF Summation
         # Turn state vector into image (HEADERSxHxW)
         if self.usd_cuda:
-            state_img = self.gasf.transform(vec_to_img.get())
+            state_img = self.gasf.fit_transform(vec_to_img.get())
         else:
-            state_img = self.gasf.transform(vec_to_img)
+            state_img = self.gasf.fit_transform(vec_to_img)
 
         return state_img
 
@@ -237,3 +237,66 @@ class Env(object):
                     col = 16
 
         return state
+
+
+"""
+Need to overide the observation_space and get obs
+"""
+
+
+class TimeEnv(Env):
+    r"""
+    State vector: 3 Time series images
+    """
+    def __init__(self,
+                 investment=20000,
+                 IMG_SIZE=48,
+                 patches=9,
+                 stop_loss=0.35,
+                 use_cuda=True):
+        super().__init__(investment, IMG_SIZE, patches, stop_loss, use_cuda)
+        self.mtf = MarkovTransitionField(image_size=IMG_SIZE)
+        self.gasf = GramianAngularField(image_size=IMG_SIZE,
+                                        method='summation')
+        self.gadf = GramianAngularField(image_size=IMG_SIZE,
+                                        method='difference')
+        # Images Field x Fields (Headers) x Size x Size
+        self.observation_space = np.zeros((3, 5, IMG_SIZE, IMG_SIZE))
+
+    def _load(self):
+        print('Loading Environment...')
+        csv_file = "/media/alan/seagate/Downloads/Binance_BTCUSDT_minute.csv"
+        columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume']
+        if self.usd_cuda:
+            df = cudf.read_csv(csv_file)
+        else:
+            df = pd.read_csv(csv_file)
+        df = df.drop(columns=['unix', 'symbol', 'Volume USDT', 'tradecount::'])
+        df.columns = columns
+        if self.usd_cuda:
+            df.index = cudf.DatetimeIndex(df['Date'])
+        else:
+            df.index = pd.DatetimeIndex(df['Date'])
+        df = df.drop(columns=['Date'])
+        df = df.dropna()
+        df = df[::-1]
+        data = df.values
+        return data
+
+    def _vec_to_image(self):
+        state_img = self.observation_space
+        state = self._create_state()
+        vec_to_img = np.transpose(state)  # HEADERS x IMG_SIZE
+        if self.usd_cuda:
+            state_img[0] = self.gasf.fit_transform(vec_to_img.get())
+            state_img[1] = self.gadf.fit_transform(vec_to_img.get())
+            state_img[2] = self.mtf.fit_transform(vec_to_img.get())
+        else:
+            state_img[0] = self.gasf.fit_transform(vec_to_img)
+            state_img[1] = self.gadf.fit_transform(vec_to_img)
+            state_img[2] = self.mtf.fit_transform(vec_to_img)
+
+        return state_img
+
+    def _get_obs(self):
+        return self._vec_to_image()
