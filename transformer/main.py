@@ -60,10 +60,10 @@ if __name__ == '__main__':
                   epsilon=EPS)
     print("Model Parameters: ", agent.count_params())
 
-    if not args.train:
-        print('Training...')
-        run(agent, env, EPISODES, False, True)
-    else:
-        print('Testing...')
-        with torch.no_grad():
-            run(agent, env, EPISODES, True, False)
+    # if not args.train:
+    #     print('Training...')
+    #     run(agent, env, EPISODES, False, True)
+    # else:
+    #     print('Testing...')
+    #     with torch.no_grad():
+    #         run(agent, env, EPISODES, True, False)

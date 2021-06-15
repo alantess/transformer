@@ -5,29 +5,6 @@ import torch.nn.functional as F
 from gtrxl_torch.gtrxl_torch import GTrXL
 
 
-class Encoder(nn.Module):
-    def __init__(self):
-        super(Encoder, self).__init__()
-        self.convs_gasf = nn.Sequential(nn.Conv2d(5, 32, 4, 6), nn.ReLU(),
-                                        nn.Conv2d(32, 64, 4, 2), nn.ReLU(),
-                                        nn.Conv2d(64, 64, 2, 1), nn.ReLU())
-
-        self.convs_gadf = nn.Sequential(nn.Conv2d(5, 32, 4, 6), nn.ReLU(),
-                                        nn.Conv2d(32, 64, 4, 2), nn.ReLU(),
-                                        nn.Conv2d(64, 64, 2, 1), nn.ReLU())
-
-        self.convs_mtf = nn.Sequential(nn.Conv2d(5, 32, 4, 6), nn.ReLU(),
-                                       nn.Conv2d(32, 64, 4, 2), nn.ReLU(),
-                                       nn.Conv2d(64, 64, 2, 1), nn.ReLU())
-
-    def forward(self, x):
-        gasf = self.convs_gasf(x[:, 0]).flatten(2)
-        gadf = self.convs_gadf(x[:, 1]).flatten(2)
-        mtf = self.convs_mtf(x[:, 2]).flatten(2)
-        x = T.cat([gasf, gadf, mtf], dim=2)
-        return x
-
-
 class TimeModel(nn.Module):
     r"""
     input dims is the observation space
@@ -41,25 +18,45 @@ class TimeModel(nn.Module):
                  chkpt_dir='models',
                  network_name='time_model'):
         super(TimeModel, self).__init__()
-        self.encoder = Encoder()
-        self.decoder = GTrXL(12, nheads, t_layers)
-        self.hidden_layer = nn.Linear(12, fc_neurons)
-        self.out = nn.Linear(fc_neurons, n_actions)
 
+        self.convs_gasf = nn.Sequential(nn.Conv2d(5, 32, 4, 6), nn.ReLU(),
+                                        nn.Conv2d(32, 64, 4, 2), nn.ReLU(),
+                                        nn.Conv2d(64, 64, 2, 1), nn.ReLU())
+
+        self.convs_gadf = nn.Sequential(nn.Conv2d(5, 32, 4, 6), nn.ReLU(),
+                                        nn.Conv2d(32, 64, 4, 2), nn.ReLU(),
+                                        nn.Conv2d(64, 64, 2, 1), nn.ReLU())
+
+        self.convs_mtf = nn.Sequential(nn.Conv2d(5, 32, 4, 6), nn.ReLU(),
+                                       nn.Conv2d(32, 64, 4, 2), nn.ReLU(),
+                                       nn.Conv2d(64, 64, 2, 1), nn.ReLU())
+
+        self.encoder = GTrXL(12, nheads, t_layers)
+
+        self.fc1 = nn.Linear(12, fc_neurons)
+        self.fc2 = nn.Linear(fc_neurons, fc_neurons)
+
+        self.decoder = GTrXL(fc_neurons, nheads, t_layers)
+        self.out = nn.Linear(fc_neurons, n_actions)
         # self.decoder = gtrxl_torch()
         self.device = T.device('cuda') if T.cuda.is_available() else T.device(
             'cpu')
         self.loss = nn.MSELoss()
-        self.optimizer = optim.Adam(self.parameters(), lr=lr)
         self.file = os.path.join(chkpt_dir, network_name + '.pt')
         self.chkpt_dir = chkpt_dir
         self.to(self.device)
+        self.optimizer = optim.Adam(self.parameters(), lr=lr)
 
-    def forward(self, state):
-        x = self.encoder(state)
-        x = self.decoder(x)
-        x = F.relu(self.hidden_layer(x))
-        return self.out(x)
+    def forward(self, x):
+        gasf = self.convs_gasf(x[:, 0]).flatten(2)
+        gadf = self.convs_gadf(x[:, 1]).flatten(2)
+        mtf = self.convs_mtf(x[:, 2]).flatten(2)
+        cat = T.cat([gasf, gadf, mtf], dim=2)
+        encoder = self.encoder(cat)
+        encoder = F.relu(self.fc1(encoder))
+        encoder = F.relu(self.fc2(encoder))
+        q = self.decoder(encoder)
+        return self.out(q)
 
     def save(self):
         if not os.path.exists(self.chkpt_dir):

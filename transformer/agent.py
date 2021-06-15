@@ -43,6 +43,7 @@ class Agent(object):
                                      nheads,
                                      transformer_layers,
                                      lr=lr)
+            print(self.q_train)
         else:
             self.memory = ReplayBuffer(capacity=capacity,
                                        input_dims=self.input_dims,

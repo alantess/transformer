@@ -42,6 +42,8 @@ What is transformer?
 # TODO 
 - [ ] Generate a candle / grammian image dataset. 
 - [ ] Improve execution time
+- [ ] Fix the dims on the concatenation of the models from NxSxE --> SxNxE with permutation
+
 
 ## Inspirations 
 **This project uses Reinforcement Learning methods on cryptocurrencies.**
