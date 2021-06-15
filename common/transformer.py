@@ -7,7 +7,10 @@ from gtrxl_torch.gtrxl_torch import GTrXL
 
 class TimeModel(nn.Module):
     r"""
-    input dims is the observation space
+    Input (State): comprised of 3 images
+    Architecture:
+        ENCODER:SHARED CNN ---> TRANSFORMER --> MLP
+        DECODER: TRANSFORMER ---> MLP
     """
     def __init__(self,
                  n_actions,
@@ -19,17 +22,9 @@ class TimeModel(nn.Module):
                  network_name='time_model'):
         super(TimeModel, self).__init__()
 
-        self.convs_gasf = nn.Sequential(nn.Conv2d(5, 32, 4, 6), nn.ReLU(),
-                                        nn.Conv2d(32, 64, 4, 2), nn.ReLU(),
-                                        nn.Conv2d(64, 64, 2, 1), nn.ReLU())
-
-        self.convs_gadf = nn.Sequential(nn.Conv2d(5, 32, 4, 6), nn.ReLU(),
-                                        nn.Conv2d(32, 64, 4, 2), nn.ReLU(),
-                                        nn.Conv2d(64, 64, 2, 1), nn.ReLU())
-
-        self.convs_mtf = nn.Sequential(nn.Conv2d(5, 32, 4, 6), nn.ReLU(),
-                                       nn.Conv2d(32, 64, 4, 2), nn.ReLU(),
-                                       nn.Conv2d(64, 64, 2, 1), nn.ReLU())
+        self.convs = nn.Sequential(nn.Conv2d(5, 32, 4, 6), nn.ReLU(),
+                                   nn.Conv2d(32, 64, 4, 2), nn.ReLU(),
+                                   nn.Conv2d(64, 64, 2, 1), nn.ReLU())
 
         self.encoder = GTrXL(12, nheads, t_layers)
 
@@ -48,9 +43,9 @@ class TimeModel(nn.Module):
         self.optimizer = optim.Adam(self.parameters(), lr=lr)
 
     def forward(self, x):
-        gasf = self.convs_gasf(x[:, 0]).flatten(2)
-        gadf = self.convs_gadf(x[:, 1]).flatten(2)
-        mtf = self.convs_mtf(x[:, 2]).flatten(2)
+        gasf = self.convs(x[:, 0]).flatten(2)
+        gadf = self.convs(x[:, 1]).flatten(2)
+        mtf = self.convs(x[:, 2]).flatten(2)
         cat = T.cat([gasf, gadf, mtf], dim=2)
         encoder = self.encoder(cat)
         encoder = F.relu(self.fc1(encoder))
