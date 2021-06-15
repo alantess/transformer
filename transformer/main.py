@@ -7,7 +7,6 @@ from common.env import *
 from common.run import *
 import numpy as np
 from agent import Agent
-import torch.multiprocessing as mp
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -22,7 +21,7 @@ if __name__ == '__main__':
         EPS = 1
         EPS_DEC = 7.5e-6
         CAPACITY = 75000
-        BATCH = 16
+        BATCH = 32
         NHEADS = 4
         T_LAYERS = 12
         REPLACE = 10000
@@ -31,13 +30,7 @@ if __name__ == '__main__':
     else:
         print('Test mode activated')
         EPS = 0.01
-        EPS_DEC = 3.5e-6
         CAPACITY = 75
-        BATCH = 16
-        NHEADS = 4
-        T_LAYERS = 6
-        REPLACE = 10000
-        LR = 0.00045
         EPISODES = 1
     np.random.seed(88)
     torch.cuda.empty_cache()
@@ -62,7 +55,7 @@ if __name__ == '__main__':
 
     if not args.train:
         print('Training...')
-        run(agent, env, EPISODES, False, True)
+        run(agent, env, EPISODES, True, True)
     else:
         print('Testing...')
         with torch.no_grad():
