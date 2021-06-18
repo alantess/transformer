@@ -16,16 +16,16 @@ if __name__ == '__main__':
                         default=False,
                         help='Trains or test an agent.')
     args = parser.parse_args()
+    EPS_DEC = 7.5e-6
+    BATCH = 64
+    NHEADS = 4
+    T_LAYERS = 12
+    REPLACE = 10000
+    LR = 0.00045
     if not args.train:
         print('Training mode activated.')
         EPS = 1
-        EPS_DEC = 7.5e-6
-        CAPACITY = 75000
-        BATCH = 32
-        NHEADS = 4
-        T_LAYERS = 12
-        REPLACE = 10000
-        LR = 0.00045
+        CAPACITY = 230000
         EPISODES = 500
     else:
         print('Test mode activated')
