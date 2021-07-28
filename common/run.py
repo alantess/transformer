@@ -35,6 +35,7 @@ def run(agent, env, n_epsidoes, load_agent=True, train_model=True):
         if (epi + 1) % 10 == 0:
             avg = np.mean(scores)
             scores = []
+            agent.save()
             if avg > best:
                 best = avg
                 agent.save()

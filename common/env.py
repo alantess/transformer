@@ -24,6 +24,7 @@ class Env(object):
         self.price = None
         self.reward_dec = 1.0
         self.stop_loss = stop_loss
+        self.position: bool = False
         self.img_size = IMG_SIZE
         self.time_step = IMG_SIZE
         self.profits = []
@@ -35,7 +36,7 @@ class Env(object):
         dim_size = int(self.patches / 2)
         self.dim_len = self.n_headers * dim_size * dim_size
         self.observation_space = np.zeros((patches, 1024), dtype=np.float32)
-        self.action_set = np.arange(17)
+        self.action_set = np.arange(4)
         self.action_space = spaces.Discrete(len(self.action_set))
         self.viewer = None
         self.total = 0
@@ -93,7 +94,7 @@ class Env(object):
         if new_holdings < self.investment - (self.investment * self.stop_loss):
             done = True
         else:
-            done = self.time_step >= self.n_step - 256
+            done = self.time_step >= self.n_step - (self.img_size * 24)
 
         if new_holdings > prev_holdings:
             reward = reward_sparse + 10
@@ -118,54 +119,14 @@ class Env(object):
         if action == 0:
             return
         # Purchase 100%
-        if action == 1:
+        elif action == 1:
             self._buy_or_sell(purchase=True, percentage=1.0)
         # Sell 100%
-        if action == 2:
+        elif action == 2:
             self._buy_or_sell(purchase=False, percentage=1.0)
-        # Purchase 75%
-        if action == 3:
-            self._buy_or_sell(purchase=True, percentage=0.75)
-        # Sell 75%
-        if action == 4:
-            self._buy_or_sell(purchase=False, percentage=0.75)
-        # Purchase 50%
-        if action == 5:
-            self._buy_or_sell(purchase=True, percentage=0.5)
-        # Sell 50%
-        if action == 6:
-            self._buy_or_sell(purchase=False, percentage=0.5)
-        # Purchase 25%
-        if action == 7:
-            self._buy_or_sell(purchase=True, percentage=0.25)
-        # Sell 25%
-        if action == 8:
-            self._buy_or_sell(purchase=False, percentage=0.25)
-
-        # Purchase 500%
-        if action == 9:
-            self._buy_or_sell(purchase=True, percentage=5.0)
-        # Sell 500%
-        if action == 10:
-            self._buy_or_sell(purchase=False, percentage=5.0)
-        # Purchase 400%
-        if action == 11:
-            self._buy_or_sell(purchase=True, percentage=4.00)
-        # Sell 400%
-        if action == 12:
-            self._buy_or_sell(purchase=False, percentage=4.00)
-        # Purchase 300%
-        if action == 13:
-            self._buy_or_sell(purchase=True, percentage=3.0)
-        # Sell 300%
-        if action == 14:
-            self._buy_or_sell(purchase=False, percentage=3.0)
-        # Purchase 200%
-        if action == 15:
-            self._buy_or_sell(purchase=True, percentage=2.00)
-        # Sell 200%
-        if action == 16:
-            self._buy_or_sell(purchase=False, percentage=2.00)
+        # Skips some time
+        elif action == 3:
+            self.time_step += (self.img_size) * 24
 
     def _buy_or_sell(self, purchase, percentage):
         #  Purchase or Sell Amount
@@ -174,10 +135,13 @@ class Env(object):
             if self.usd_wallet > amount:
                 self.usd_wallet -= amount
                 self.crypto_wallet += amount
+            else:
+                self.position = True  # Long
         else:
             if self.crypto_wallet >= amount:
                 self.crypto_wallet -= amount
                 self.usd_wallet += amount
+                self.position = False  # Short
 
     # Create a state vector CHLO for the last 64 timesteps IE = 5.3 hours
     def _create_state(self):
@@ -236,6 +200,8 @@ class Env(object):
                 if col > self.img_size:
                     col = 16
 
+        if self.position:
+            state = 1 / state
         return state
 
 
@@ -291,6 +257,9 @@ class TimeEnv(Env):
             state_img[0] = self.gasf.fit_transform(vec_to_img)
             state_img[1] = self.gadf.fit_transform(vec_to_img)
             state_img[2] = self.mtf.fit_transform(vec_to_img)
+
+        if self.position:
+            state_img += 1
 
         return state_img
 

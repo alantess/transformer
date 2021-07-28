@@ -55,7 +55,7 @@ if __name__ == '__main__':
 
     if not args.train:
         print('Training...')
-        run(agent, env, EPISODES, True, True)
+        run(agent, env, EPISODES, False, True)
     else:
         print('Testing...')
         with torch.no_grad():
